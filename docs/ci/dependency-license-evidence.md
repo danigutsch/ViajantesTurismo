@@ -11,6 +11,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Security candidate renewal](#security-candidate-renewal)
 - [Payments rebase candidate](#payments-rebase-candidate)
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
+- [Local resource guard candidate](#local-resource-guard-candidate)
 - [Foundation and tooling candidate qualification](#foundation-and-tooling-candidate-qualification)
 - [Durable maintenance scheduler candidate](#durable-maintenance-scheduler-candidate)
 - [DDD standards candidate](#ddd-standards-candidate)
@@ -21,6 +22,17 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
 - [Candidate that targets net11 only](#candidate-that-targets-net11-only)
+
+## Local resource guard candidate
+
+Candidate `0.1.0-alpha.963.1` uses clean library revision
+`9d5a1975e147989630f75e5345117462575ca3be`. The 32 refreshed locks preserve all
+2,184 third-party dependency rows from `.954.1`. The approved StreamJsonRpc `2.25.29`
+and Magick.NET-Q8-AnyCPU `15.1.0` archives retain their SHA-256 values. The three
+StreamJsonRpc and eleven Magick lock contexts retain their versions and NuGet content hashes.
+The two metadata exceptions apply to this exact candidate.
+[Published candidate](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.963.1) ·
+[Published platform and API validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45772572655)
 
 ## Foundation and tooling candidate qualification
 

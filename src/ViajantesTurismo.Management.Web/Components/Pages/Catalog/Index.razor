@@ -24,9 +24,10 @@ else if (_total == 0)
         No Catalog tours are available yet. Catalog drafts are created after Admin tour events are ingested.
     </div>
 }
-else
+
+@if (_errorMessage is null && _total is not 0)
 {
-    <div class="table-responsive-wrapper">
+    <div class="table-responsive-wrapper" hidden="@(_total is null)">
         <QuickGrid TGridItem="CatalogTourListItemDto" ItemsProvider="@_loadTours" Class="table table-hover" Pagination="@_pagination">
             <PropertyColumn Property="@(tour => tour.Identifier)" Title="Identifier" Sortable="true" />
             <PropertyColumn Property="@(tour => tour.Title)" Title="Public Title" Sortable="true" IsDefaultSortColumn="true" />
@@ -64,16 +65,23 @@ else
 
 @code {
     private GridItemsProvider<CatalogTourListItemDto>? _loadTours;
-    private CatalogTourPageDto? _initialPage;
+    private ((int Page, CatalogTourListSort Sort, bool Descending) Query, GridItemsProviderResult<CatalogTourListItemDto> Result)? _renderLoad;
     private int? _total;
     private string? _errorMessage;
     private readonly PaginationState _pagination = new() { ItemsPerPage = CatalogTourPageDto.ItemsPerPage };
 
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? RequestedPage { get; set; }
+
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         _loadTours = LoadTours;
-        _initialPage = await FetchTours(1, CatalogTourListSort.Title, descending: false, CancellationToken.None);
+
+        // Set the saved page before QuickGrid collects the sort columns and runs its first request.
+        return int.TryParse(RequestedPage, CultureInfo.InvariantCulture, out var page) && page > 1
+            ? _pagination.SetCurrentPageIndexAsync(page - 1)
+            : Task.CompletedTask;
     }
 
     private async ValueTask<GridItemsProviderResult<CatalogTourListItemDto>> LoadTours(
@@ -88,23 +96,34 @@ else
         };
         var pageNumber = (request.StartIndex / CatalogTourPageDto.ItemsPerPage) + 1;
         var descending = request.SortByColumn is not null && !request.SortByAscending;
-        var initialPage = _initialPage;
-        _initialPage = null;
-        if (initialPage is not null && pageNumber == 1 && sort == CatalogTourListSort.Title && !descending)
+        var query = (pageNumber, sort, descending);
+        if (_renderLoad is { } renderLoad && renderLoad.Query == query)
         {
-            return GridItemsProviderResult.From(initialPage.Items.ToArray(), initialPage.Total);
+            request.CancellationToken.ThrowIfCancellationRequested();
+            _renderLoad = null;
+            return renderLoad.Result;
         }
 
         var previousTotal = _total;
         var page = await FetchTours(pageNumber, sort, descending, request.CancellationToken);
-        if (_total != previousTotal)
-        {
-            await InvokeAsync(StateHasChanged);
-        }
-
-        return page is not null
+        var result = page is not null
             ? GridItemsProviderResult.From(page.Items.ToArray(), page.Total)
             : GridItemsProviderResult.From(Array.Empty<CatalogTourListItemDto>(), 0);
+        if (_total != previousTotal)
+        {
+            // QuickGrid can request the same page during this render, before it records the provider result.
+            _renderLoad = (query, result);
+            try
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+            finally
+            {
+                _renderLoad = null;
+            }
+        }
+
+        return result;
     }
 
     private async ValueTask<CatalogTourPageDto?> FetchTours(int pageNumber, CatalogTourListSort sort, bool descending, CancellationToken ct)

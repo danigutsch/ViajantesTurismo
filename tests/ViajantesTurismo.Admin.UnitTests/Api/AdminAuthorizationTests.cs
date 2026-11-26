@@ -22,7 +22,7 @@ public sealed class AdminAuthorizationTests
     }
 
     [Fact]
-    public void Admin_role_can_read_schedule_status_without_schedule_control()
+    public void Admin_role_can_read_and_control_the_schedule()
     {
         // Arrange
         string[] expectedPermissions =
@@ -38,6 +38,7 @@ public sealed class AdminAuthorizationTests
             AdminAuthorization.DocumentHold,
             AdminAuthorization.DocumentationRead,
             AdminAuthorization.OperationsScheduleRead,
+            AdminAuthorization.OperationsScheduleControl,
             AdminAuthorization.PaymentManage,
             AdminAuthorization.PaymentRead,
             AdminAuthorization.PaymentWrite,

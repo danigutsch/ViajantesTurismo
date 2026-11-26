@@ -16,7 +16,6 @@ public sealed class DocumentMaintenanceSchedulePanelTests : BunitContext
     private const string ReasonSelector = "#maintenance-control-reason";
 
     [Theory]
-    [InlineData("Admin")]
     [InlineData("Operator")]
     [InlineData("Reader")]
     [InlineData(null)]
@@ -82,12 +81,14 @@ public sealed class DocumentMaintenanceSchedulePanelTests : BunitContext
     }
 
     [Theory]
-    [InlineData(false, "Pause schedule", "pause")]
-    [InlineData(true, "Resume schedule", "resume")]
-    public async Task A_dedicated_controller_can_confirm_the_applicable_schedule_transition(bool paused, string label, string path)
+    [InlineData("Admin", false, "Pause schedule", "pause")]
+    [InlineData("Admin", true, "Resume schedule", "resume")]
+    [InlineData(ControllerRole, false, "Pause schedule", "pause")]
+    [InlineData(ControllerRole, true, "Resume schedule", "resume")]
+    public async Task An_authorized_operator_can_confirm_the_applicable_schedule_transition(string role, bool paused, string label, string path)
     {
         // Arrange
-        using var scenario = new DocumentMaintenanceScheduleScenario(this, ControllerRole);
+        using var scenario = new DocumentMaintenanceScheduleScenario(this, role);
         var panel = Render<DocumentMaintenanceSchedulePanel>(parameters => parameters.Add(item => item.Schedule, DocumentMaintenanceScheduleScenario.Schedule(paused)));
 
         // Act
@@ -137,11 +138,13 @@ public sealed class DocumentMaintenanceSchedulePanelTests : BunitContext
         scenario.Controls.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task A_lost_control_response_resends_the_same_intent_and_a_paused_run_stays_queued()
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData(ControllerRole)]
+    public async Task A_lost_control_response_resends_the_same_intent_and_a_paused_run_stays_queued(string role)
     {
         // Arrange
-        using var scenario = new DocumentMaintenanceScheduleScenario(this, ControllerRole)
+        using var scenario = new DocumentMaintenanceScheduleScenario(this, role)
         {
             NextControlFailure = new HttpRequestException("synthetic-private-control-detail"),
         };
@@ -362,12 +365,14 @@ public sealed class DocumentMaintenanceSchedulePanelTests : BunitContext
             .ShouldBe("/api/v1/operations/document-maintenance/drafts/pause");
     }
 
-    [Fact]
-    public async Task Retry_uses_the_exact_earlier_failed_execution_after_a_newer_success()
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData(ControllerRole)]
+    public async Task Retry_uses_the_exact_earlier_failed_execution_after_a_newer_success(string role)
     {
         // Arrange
         const string failedId = "33333333-3333-3333-3333-333333333333";
-        using var scenario = new DocumentMaintenanceScheduleScenario(this, ControllerRole)
+        using var scenario = new DocumentMaintenanceScheduleScenario(this, role)
         {
             Executions = """
                 {"executions":[

@@ -10,23 +10,27 @@ namespace ViajantesTurismo.Admin.ApiServiceTests;
 public sealed class DocumentMaintenanceControlAuthorizationTests
 {
     [Theory]
-    [InlineData("pause")]
-    [InlineData("resume")]
-    [InlineData("trigger")]
-    [InlineData("retry")]
-    public async Task A_read_only_operations_role_cannot_control_the_schedule(string control)
+    [InlineData("Reader", "pause", HttpStatusCode.Forbidden)]
+    [InlineData("Reader", "retry", HttpStatusCode.Forbidden)]
+    [InlineData("Operator", "resume", HttpStatusCode.Forbidden)]
+    [InlineData("Operator", "trigger", HttpStatusCode.Forbidden)]
+    [InlineData(null, "trigger", HttpStatusCode.Unauthorized)]
+    public async Task An_unauthorized_session_cannot_control_the_schedule(string? role, string control, HttpStatusCode expected)
     {
         // Arrange
         await using var factory = AdminApiTestHost.Create();
         using var client = factory.CreateClient();
-        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        if (role is not null)
+        {
+            AdminApiTestHost.ConfigureAuthenticatedClient(client, role);
+        }
         using var request = AdminApiMutationRequestFactory.Create("POST", $"/api/v1/operations/document-maintenance/drafts/{control}");
 
         // Act
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.StatusCode.ShouldBe(expected);
     }
 
     [Fact]
@@ -40,12 +44,13 @@ public sealed class DocumentMaintenanceControlAuthorizationTests
                 options.Events.OnTokenValidated = async context =>
                 {
                     await onTokenValidated(context);
-                    var identity = (ClaimsIdentity)context.Principal!.Identity!;
+                    var identity = context.Principal?.Identity as ClaimsIdentity
+                        ?? throw new InvalidOperationException("The test token requires a claims identity.");
                     identity.AddClaim(new Claim(ApiAuthenticationDefaults.PermissionClaimType, "operations.schedule.control"));
                 };
             }));
         using var client = factory.CreateClient();
-        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Reader");
         using var request = AdminApiMutationRequestFactory.Create("POST", "/api/v1/operations/document-maintenance/drafts/trigger");
 
         // Act
@@ -55,13 +60,15 @@ public sealed class DocumentMaintenanceControlAuthorizationTests
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task The_dedicated_role_can_reach_schedule_control_validation()
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("OperationsScheduleController")]
+    public async Task An_authorized_role_still_requires_valid_schedule_control_input(string role)
     {
         // Arrange
         await using var factory = AdminApiTestHost.Create();
         using var client = factory.CreateClient();
-        AdminApiTestHost.ConfigureAuthenticatedClient(client, "OperationsScheduleController");
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, role);
         using var request = AdminApiMutationRequestFactory.Create("POST", "/api/v1/operations/document-maintenance/drafts/trigger");
 
         // Act
