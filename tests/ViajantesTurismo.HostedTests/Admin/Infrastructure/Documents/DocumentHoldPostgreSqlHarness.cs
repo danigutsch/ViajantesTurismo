@@ -190,13 +190,17 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     }
 
     /// <summary>Runs the idempotency purge in the disposition transaction with one hold check.</summary>
-    public async Task<DocumentPurgeCounts> PurgeIdempotency(DateTimeOffset cutoff, CancellationToken ct)
+    public Task<DocumentPurgeCounts> PurgeIdempotency(DateTimeOffset cutoff, CancellationToken ct) =>
+        PurgeIdempotency(cutoff, heldLineages: null, ct);
+
+    /// <summary>Runs the same transaction with a supplied hold check when a test controls the hold timing.</summary>
+    public async Task<DocumentPurgeCounts> PurgeIdempotency(DateTimeOffset cutoff, HeldDocumentLineages? heldLineages, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
-        var gate = scope.ServiceProvider.GetRequiredService<DocumentHoldGate>();
+        var guard = heldLineages ?? scope.ServiceProvider.GetRequiredService<DocumentHoldGate>().FindHeldLineages;
         var store = scope.ServiceProvider.GetRequiredService<IDocumentIdempotencyRetentionStore>();
         return await scope.ServiceProvider.GetRequiredService<IReadCommittedTransaction>()
-            .Execute(() => store.PurgeExpiredEntries(cutoff, gate.FindHeldLineages, ct), ct);
+            .Execute(() => store.PurgeExpiredEntries(cutoff, guard, ct), ct);
     }
 
     /// <summary>Asks the gate about a lineage outside any transaction.</summary>

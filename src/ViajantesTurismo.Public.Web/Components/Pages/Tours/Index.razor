@@ -6,7 +6,7 @@
 
 <PublicPageHead Title="@DocumentTitle" Description="@MetadataDescription" Path="@CanonicalPath" />
 
-<Section Title="@Heading" Level="1">
+<Section Heading="@Heading" Level="1">
     @if (_loadFailed)
     {
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar as viagens. Tente novamente mais tarde." : "Tours could not be loaded right now. Try again later.")</p>

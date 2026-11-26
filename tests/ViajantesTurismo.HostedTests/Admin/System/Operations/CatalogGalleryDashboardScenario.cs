@@ -37,7 +37,7 @@ internal sealed record CatalogGalleryDashboardScenario(
         var dueWakeIds = new[] { firstWake.ToString("D"), secondWake.ToString("D") };
         string[] seededWakeIds = [.. dueWakeIds, futureWake.ToString("D")];
         // Commit the new wakes with a future deadline, so the live relay cannot claim them during setup.
-        var staged = await catalog.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        var staged = await catalog.Database.Database.ExecuteSqlAsync($"""
             UPDATE messaging.outbox_messages
             SET "PublishAttempts" = 2, "LastPublishAttemptAt" = {oldestDueAt.AddMinutes(-1)},
                 "NextPublishAttemptAt" = {now.AddHours(1)}

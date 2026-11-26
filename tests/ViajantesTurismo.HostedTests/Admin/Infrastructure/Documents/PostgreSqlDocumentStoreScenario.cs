@@ -1208,7 +1208,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async Task ClearBrandingSourceRevision(Guid documentId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+        _ = await dbContext.Database.ExecuteSqlAsync(
             $"""UPDATE "DocumentDrafts" SET "BrandingSourceRevision" = NULL WHERE "Id" = {documentId}""",
             ct);
     }
@@ -1217,7 +1217,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async Task UpdateAuditActor(Guid id, string actorId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+        _ = await dbContext.Database.ExecuteSqlAsync(
             $"UPDATE \"DocumentAuditRecords\" SET \"ActorId\" = {actorId} WHERE \"Id\" = {id}",
             ct);
     }
@@ -1226,7 +1226,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async Task DeleteAuditRecord(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+        _ = await dbContext.Database.ExecuteSqlAsync(
             $"DELETE FROM \"DocumentAuditRecords\" WHERE \"Id\" = {id}",
             ct);
     }
@@ -1245,7 +1245,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
-        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+        _ = await dbContext.Database.ExecuteSqlAsync(
             $"""
             INSERT INTO "DocumentAuditRecords"
                 ("Id", "ActorId", "DocumentId", "Operation", "Outcome", "ReasonCode", "CorrelationId", "OccurredAtUtc", "RetentionExpiresAt")
@@ -1312,7 +1312,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.Database.MigrateAsync(ct);
 
         var state = completedAt is null ? "Started" : "Completed";
-        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+        _ = await dbContext.Database.ExecuteSqlAsync(
             $"""
             INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt", "RetentionOwner")
             VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt}, {retentionOwner})
@@ -1321,17 +1321,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     }
 
     /// <summary>Purges document idempotency entries at or before the cutoff and returns how many were removed.</summary>
-    public async Task<int> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, CancellationToken ct)
-    {
-        await using var dbContext = CreateDbContext();
-        return (await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, NoHeldLineages.Filter, ct)).Purged;
-    }
+    public async Task<int> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, CancellationToken ct) =>
+        (await PurgeExpiredIdempotencyEntries(cutoff, NoHeldLineages.Filter, ct)).Purged;
 
     /// <summary>Purges document idempotency entries at or before the cutoff with the given hold filter and returns the counts.</summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
-        await using var dbContext = CreateDbContext();
-        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, heldLineages, ct);
+        await using var harness = DocumentHoldPostgreSqlHarness.Create(ConnectionString, enableRetryOnFailure: false);
+        return await harness.PurgeIdempotency(cutoff, heldLineages, ct);
     }
 
     /// <summary>Returns the keys of the remaining idempotency entries.</summary>
@@ -1600,7 +1597,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             var bookingDate = TimeProvider.System.GetUtcNow().UtcDateTime;
             var tourIdentifier = $"document-fixture-{tourId:N}";
 
-            _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            _ = await dbContext.Database.ExecuteSqlAsync(
                 $"""
                 INSERT INTO "Tours" (
                     "Id", "Identifier", "Name", "StartDate", "EndDate", "Price",
@@ -1612,7 +1609,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                 """,
                 ct);
 
-            _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            _ = await dbContext.Database.ExecuteSqlAsync(
                 $"""
                 INSERT INTO "Booking" (
                     "Id", "TourId", "BasePrice", "RoomType", "RoomAdditionalCost",

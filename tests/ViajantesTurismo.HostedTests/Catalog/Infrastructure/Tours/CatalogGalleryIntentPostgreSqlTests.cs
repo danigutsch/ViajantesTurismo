@@ -64,7 +64,7 @@ public sealed class CatalogGalleryIntentPostgreSqlTests(HostedTestFixture shared
         var targetEvidence = targetStatus.ShouldNotBeNull();
         var terminalEventId = targetEvidence.TerminalEventId.ShouldNotBeNull();
         var otherWakeId = otherState.Value.Outcome.ShouldNotBeNull().IntentId;
-        var rewired = await reader.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        var rewired = await reader.Database.Database.ExecuteSqlAsync($"""
             UPDATE event_sourcing.events SET causation_event_id = {otherWakeId} WHERE event_id = {terminalEventId}
             """, ct);
         var disjointEvidence = await reader.GalleryOperations.Read(targetTourId, targetSequence, ct);
@@ -138,7 +138,7 @@ public sealed class CatalogGalleryIntentPostgreSqlTests(HostedTestFixture shared
         var wakeTwo = await scenario.GetWake(secondIntent.ShouldNotBeNull().Id, ct);
         var publishedAt = DateTimeOffset.FromUnixTimeMilliseconds(wakeTwo.OccurredAt.ToUnixTimeMilliseconds()).AddMinutes(1);
         var wakeTwoId = wakeTwo.EventId.ToString("D");
-        var published = await relational.ExecuteSqlInterpolatedAsync($"""
+        var published = await relational.ExecuteSqlAsync($"""
             UPDATE messaging.outbox_messages SET "PublishedAt" = {publishedAt} WHERE "EventId" = {wakeTwoId}
             """, ct);
         await relational.ExecuteSqlRawAsync(
@@ -158,11 +158,11 @@ public sealed class CatalogGalleryIntentPostgreSqlTests(HostedTestFixture shared
         var applied = await scenario.Events.Load(stream, afterRevision: StreamRevision.From(3), ct);
         var projected = await scenario.Tours.GetTour(tour.Id, ct);
         var secondStatus = await scenario.GalleryOperations.Read(tour.Id, secondSequence, ct);
-        var mismatched = await relational.ExecuteSqlInterpolatedAsync($"""
+        var mismatched = await relational.ExecuteSqlAsync($"""
             UPDATE messaging.outbox_messages SET "EventType" = 'fixture.unrelated' WHERE "EventId" = {wakeTwoId}
             """, ct);
         var mismatchedStatus = await scenario.GalleryOperations.Read(tour.Id, firstQueued.Value, ct);
-        var removed = await relational.ExecuteSqlInterpolatedAsync($"""
+        var removed = await relational.ExecuteSqlAsync($"""
             DELETE FROM messaging.outbox_messages WHERE "EventId" = {wakeTwoId}
             """, ct);
         var afterRemoval = await scenario.GalleryOperations.Read(tour.Id, firstQueued.Value, ct);

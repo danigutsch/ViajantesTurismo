@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Data.Common;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -177,10 +178,16 @@ internal static class MigrationPostgreSql
             throw new InvalidDataException("Both migration PostgreSQL connection secrets are required.");
         }
 
+        var supplied = new DbConnectionStringBuilder { ConnectionString = connection };
+        // Npgsql 11 removed this option. Governed migrations use dedicated sessions.
+        if (supplied.Remove("Multiplexing"))
+        {
+            connection = supplied.ConnectionString;
+        }
+
         var settings = new NpgsqlConnectionStringBuilder(connection)
         {
             Pooling = false,
-            Multiplexing = false,
             Enlist = false,
             IncludeErrorDetail = false,
             LogParameters = false,

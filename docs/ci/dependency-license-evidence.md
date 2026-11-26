@@ -5,6 +5,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 
 ## Contents
 
+- [Published .970.1 candidate](#published-9701-candidate)
 - [Snapshot failure and correction](#snapshot-failure-and-correction)
 - [StreamJsonRpc metadata review](#streamjsonrpc-metadata-review)
 - [Magick native audit](#magick-native-audit)
@@ -22,6 +23,30 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
 - [Candidate that targets net11 only](#candidate-that-targets-net11-only)
+
+## Published .970.1 candidate
+
+On November 26, 2026, the app owner approved the license-metadata exception for the exact
+`Magick.NET-Q8-AnyCPU` `15.1.1` archive. The exception applies to clean SharedKernel candidate
+`0.1.0-alpha.970.1` at revision `f164e9716d8c1e598cafb9dc954f884cbab4eb4f`. It classifies the archive's
+Apache-2.0 nuspec metadata for dependency review. Native redistribution obligations remain in the
+distribution audit. The existing approval for `StreamJsonRpc` `2.25.29` carries forward on its
+unchanged archive. [App approval and scope](https://github.com/danigutsch/ViajantesTurismo/issues/1658)
+
+| Verified input | SHA-256 |
+| --- | --- |
+| `Magick.NET-Q8-AnyCPU` `15.1.1` package | `0b7948aac734b12557ff0c496690a1ab62f3f16a0cf8fbe7bd3780e1ecd741c8` |
+| `Magick.NET-Q8-AnyCPU` `15.1.1` nuspec | `73b4b2549e079c9208599cabe23839241d7640eb25d3a608e607a6ea78bae961` |
+| `Magick.NET-Q8-AnyCPU` `15.1.1` notice | `5c264d5301136cf5e454f37e0beb78ae969245681ab0c7832f881deb3e71f103` |
+| `Magick.NET.Core` `15.1.1` package | `eadde82a3fa80df7e57bd191ebc06d57d245616ccdb4e9d09e1104f1db4db931` |
+| `StreamJsonRpc` `2.25.29` package | `d0f7be6b1b623df638a35371eb297aa0f7df18ff50555fc9448573e7a5c1111b` |
+
+Both vendor packages passed signature verification. The private locked application graph passed 39
+Catalog unit cases and 62 Catalog and Branding HTTP cases. Loaded managed assemblies and the
+Linux x64 native library matched their exact archive members. The published SharedKernel candidate
+passed Linux and Windows package consumption and NativeAOT for all 157 package hashes.
+[Publisher release](https://github.com/dlemstra/Magick.NET/releases/tag/15.1.1) ·
+[Published candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45862186309)
 
 ## Local resource guard candidate
 

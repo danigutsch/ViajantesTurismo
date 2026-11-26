@@ -9,7 +9,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 public sealed class MessagingHealthApiClient(HttpClient httpClient) : IMessagingHealthApiClient
 {
     private const string MessagingRoute = "/api/v1/operations/messaging";
-    private const string InvalidPageMessage = "Messaging response contained an invalid page.";
 
     /// <inheritdoc />
     public async Task<HttpOutcome<GetMessagingHealthDto>> ReadMessagingHealth(CancellationToken ct)
@@ -33,17 +32,14 @@ public sealed class MessagingHealthApiClient(HttpClient httpClient) : IMessaging
             ContractConstants.DefaultCatalogDeliveryPageSize, filters.EventId, filters.EventType, filters.RecordedSince,
             filters.AfterRecordedAt, filters.AfterStorageId);
         var json = MessagingHealthApiClientJsonContext.Default;
-        var outcome = await HttpOutcomeMapper.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{MessagingRoute}/catalog-delivery{query}", UriKind.Relative)),
             HttpStatusCode.OK,
             json.GetCatalogDeliveryPageDto,
             json.ContractValidationProblemDto,
+            validateValue: page => IsCatalogDeliveryPage(page, filters),
             ct).ConfigureAwait(false);
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            && (outcome.Value is not { } page || !IsCatalogDeliveryPage(page, filters))
-            ? HttpOutcomeMapper.Status<GetCatalogDeliveryPageDto>(HttpOutcomeKind.MalformedBody, HttpStatusCode.OK, InvalidPageMessage)
-            : outcome;
     }
 
     /// <inheritdoc />
@@ -59,17 +55,14 @@ public sealed class MessagingHealthApiClient(HttpClient httpClient) : IMessaging
             query += "&includePublished=true";
         }
         var json = MessagingHealthApiClientJsonContext.Default;
-        var outcome = await HttpOutcomeMapper.Send(
+        return await HttpOutcomeMapper.Send(
             httpClient,
             new HttpRequestMessage(HttpMethod.Get, new Uri($"{MessagingRoute}/outbox{query}", UriKind.Relative)),
             HttpStatusCode.OK,
             json.GetOutboxDeliveryPageDto,
             json.ContractValidationProblemDto,
+            validateValue: page => IsOutboxDeliveryPage(page, filters),
             ct).ConfigureAwait(false);
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            && (outcome.Value is not { } page || !IsOutboxDeliveryPage(page, filters))
-            ? HttpOutcomeMapper.Status<GetOutboxDeliveryPageDto>(HttpOutcomeKind.MalformedBody, HttpStatusCode.OK, InvalidPageMessage)
-            : outcome;
     }
 
     private static bool IsCatalogDeliveryPage(GetCatalogDeliveryPageDto page, CatalogDeliveryFilters filters) =>

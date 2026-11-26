@@ -13,14 +13,14 @@
 @if (_loadFailed)
 {
     <PageTitle>@UnavailableTitle - Viajantes Turismo</PageTitle>
-    <Section Title="@UnavailableTitle" Level="1">
+    <Section Heading="@UnavailableTitle" Level="1">
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar esta viagem. Tente novamente mais tarde." : "This tour could not be loaded right now. Try again later.")</p>
     </Section>
 }
 else if (_tour is null)
 {
     <PageTitle>@NotFoundTitle - Viajantes Turismo</PageTitle>
-    <Section Title="@NotFoundTitle" Level="1">
+    <Section Heading="@NotFoundTitle" Level="1">
         <p>@(Culture.IsPortuguese ? "A viagem solicitada não foi publicada." : "The requested tour is not published.")</p>
     </Section>
 }
@@ -36,7 +36,7 @@ else
     <script type="application/ld+json">@DescribeTour(_tour)</script>
 
     <article>
-        <Hero Title="@_tour.Title" Subtitle="@_tour.Summary"
+        <Hero Heading="@_tour.Title" Subtitle="@_tour.Summary"
               Image="@(coverImage is null ? null : TourImageRenditions.Responsive(LinkGenerator, coverImage, TourImageRenditions.HalfWidthSizes))">
             <Actions>
                 <ButtonLink Href="@LinkTarget.FromString(Culture.Localize("/group-bike-tours"))" Variant="ButtonVariant.Outline">
@@ -47,21 +47,21 @@ else
 
         @if (!string.IsNullOrWhiteSpace(_tour.Description))
         {
-            <Section Title="@(Culture.IsPortuguese ? "Sobre esta viagem" : "About this tour")" HeadingId="tour-description">
+            <Section Heading="@(Culture.IsPortuguese ? "Sobre esta viagem" : "About this tour")" HeadingId="tour-description">
                 <p>@_tour.Description</p>
             </Section>
         }
 
         @if (!string.IsNullOrWhiteSpace(_tour.Itinerary))
         {
-            <Section Title="@(Culture.IsPortuguese ? "Roteiro" : "Itinerary")" HeadingId="tour-itinerary">
+            <Section Heading="@(Culture.IsPortuguese ? "Roteiro" : "Itinerary")" HeadingId="tour-itinerary">
                 <p>@_tour.Itinerary</p>
             </Section>
         }
 
         @if (galleryImages.Count > 0)
         {
-            <Section Title="@(Culture.IsPortuguese ? "Galeria" : "Gallery")" HeadingId="tour-gallery">
+            <Section Heading="@(Culture.IsPortuguese ? "Galeria" : "Gallery")" HeadingId="tour-gallery">
                 <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, galleryImages)" />
                 <Pager Window="@_photoWindow" PageHref="@PhotoLink"
                        Label="@(Culture.IsPortuguese ? "Páginas de fotos" : "Tour photo pages")"

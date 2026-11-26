@@ -47,20 +47,10 @@ public sealed class DocumentMaintenanceApiClient(HttpClient httpClient) :
             static page => IsComplete(page.Executions), ct);
     }
 
-    private async Task<HttpOutcome<T>> ReadRequiredCollections<T>(string route, JsonTypeInfo<T> typeInfo, Func<T, bool> isComplete, CancellationToken ct)
-        where T : class
-    {
-        var outcome = await HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
-            HttpStatusCode.OK, typeInfo, DocumentsApiClientJsonContext.Default.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        if (outcome.Kind != HttpOutcomeKind.Succeeded)
-        {
-            return outcome;
-        }
-
-        return outcome.Value is { } value && isComplete(value)
-            ? outcome
-            : HttpOutcomeMapper.Status<T>(HttpOutcomeKind.MalformedBody, HttpStatusCode.OK, "Maintenance response contained a missing or invalid collection.");
-    }
+    private Task<HttpOutcome<T>> ReadRequiredCollections<T>(string route, JsonTypeInfo<T> typeInfo, Func<T, bool> isComplete, CancellationToken ct)
+        where T : class =>
+        HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK, typeInfo, DocumentsApiClientJsonContext.Default.ContractValidationProblemDto, validateValue: isComplete, ct);
 
     private static bool IsComplete<T>(IReadOnlyList<T>? items) where T : class => items is not null && items.All(static item => item is not null);
 

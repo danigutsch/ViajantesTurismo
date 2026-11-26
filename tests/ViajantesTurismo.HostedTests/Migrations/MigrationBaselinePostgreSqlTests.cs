@@ -17,6 +17,8 @@ namespace ViajantesTurismo.HostedTests.Migrations;
 public sealed class MigrationBaselinePostgreSqlTests(PostgreSqlTestServerFixture fixture)
     : IClassFixture<PostgreSqlTestServerFixture>
 {
+    private const string SchedulerMigration = "20261125144937_AddDocumentMaintenanceScheduler";
+
     [Fact]
     public async Task The_fresh_baseline_rejects_an_initialized_target_and_preserves_its_history()
     {
@@ -89,7 +91,7 @@ public sealed class MigrationBaselinePostgreSqlTests(PostgreSqlTestServerFixture
         await predecessor.GetService<IMigrator>().MigrateAsync("20261123164511_IndexPaymentAuditsByTargetAndSequence", ct);
         await scope.GrantAdminHistoryAppend(ct);
         await using var ef = MigrationBaselineFixture.CreateContext("admin", expected.ConnectionString);
-        await ef.Database.MigrateAsync(ct);
+        await ef.GetService<IMigrator>().MigrateAsync(SchedulerMigration, ct);
         var manifest = await MigrationBaselineFixture.WriteAdminSchedulerManifest(scope, ct);
 
         // Act
@@ -144,7 +146,7 @@ public sealed class MigrationBaselinePostgreSqlTests(PostgreSqlTestServerFixture
         var history = (await ef.Database.GetAppliedMigrationsAsync(ct)).ToArray();
 
         // Act
-        await migrator.MigrateAsync(targetMigration: null, ct);
+        await migrator.MigrateAsync(SchedulerMigration, ct);
         var expanded = await MigrationBaselineSchema.Read(database.ConnectionString, ct);
         await migrator.MigrateAsync(predecessor, ct);
         var contracted = await MigrationBaselineSchema.Read(database.ConnectionString, ct);

@@ -208,6 +208,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("Time")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("WorkflowCorrelationId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventId")
@@ -216,6 +219,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("PublishedAt", "EnqueuedAt");
 
                     b.HasIndex("PublishedAt", "NextPublishAttemptAt", "EnqueuedAt");
+
+                    b.HasIndex("WorkflowCorrelationId", "EnqueuedAt", "Id")
+                        .IsDescending(false, true, true);
 
                     b.ToTable("outbox_messages", "messaging");
                 });
@@ -314,6 +320,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("Time")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("WorkflowCorrelationId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ConsumerName", "EventId")
@@ -322,6 +331,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("ConsumerName", "PoisonedAt");
 
                     b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
+
+                    b.HasIndex("ConsumerName", "WorkflowCorrelationId", "ReceivedAt", "Id")
+                        .IsDescending(false, false, true, true);
 
                     b.ToTable("transport_messages", "messaging");
                 });

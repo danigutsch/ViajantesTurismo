@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using SharedKernel.EventSourcing;
@@ -119,7 +120,12 @@ public sealed class CatalogCompletedDuplicatesPostgreSqlTests(HostedTestFixture 
         await using var database = await shared.Databases.Create(ct);
         await using var scenario = await CatalogGalleryIntentPostgreSqlScenario.Create(database.ConnectionString, ct);
         var migrator = scenario.Database.GetService<IMigrator>();
-        await migrator.MigrateAsync("20261124085349_RecordCatalogGalleryAcceptanceTime", ct);
+        // Remove just the observation table. The current outbox uses its later workflow columns.
+        var rollback = migrator.GenerateScript(
+            "20261124091141_ObserveCatalogCompletedInboxDuplicates",
+            "20261124085349_RecordCatalogGalleryAcceptanceTime",
+            MigrationsSqlGenerationOptions.NoTransactions);
+        await scenario.Database.Database.ExecuteSqlRawAsync(rollback, ct);
         var tour = await scenario.SeedDraft(authoredGallery: false, ct);
         var stream = CatalogTourStreamIds.FromAdminTourId(tour.AdminTourId);
         var photo = PublicMediaImageTestFactory.CreateReadyImage(tour.Id, "first.jpg", "first.jpg", "sha256:first", "First", 0, true);
