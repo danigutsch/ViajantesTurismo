@@ -62,6 +62,7 @@ internal static class AdminAuthorization
                 DocumentHold,
                 DocumentationRead,
                 OperationsScheduleRead,
+                OperationsScheduleControl,
                 PaymentManage,
                 PaymentRead,
                 PaymentWrite,

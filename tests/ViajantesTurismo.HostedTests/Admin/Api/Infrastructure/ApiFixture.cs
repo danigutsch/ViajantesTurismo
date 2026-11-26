@@ -117,6 +117,23 @@ public class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admin.Testi
         return await DocumentAuditMetadataReader.ReadByDocumentId(dataSource, documentId, ct);
     }
 
+    /// <summary>Reads the durable control audit for one fixture-owned scheduler request.</summary>
+    internal async Task<IReadOnlyList<(string ActorId, string Action, string Reason)>> GetMaintenanceControlAudit(Guid requestId, CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT "ActorId", "Action", "Reason"
+            FROM document_maintenance.control_audit
+            WHERE "RequestId" = @requestId;
+            """);
+        command.Parameters.AddWithValue("requestId", requestId);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        return await reader.ReadAsync(ct)
+            ? [(reader.GetString(0), reader.GetString(1), reader.GetString(2))]
+            : [];
+    }
+
     /// <summary>Reads the not-found rejections of <paramref name="operation"/> recorded since <paramref name="sinceUtc"/>; they name no document.</summary>
     internal async Task<IReadOnlyList<DocumentAuditEntry>> GetUnresolvedDocumentRejections(string operation, DateTime sinceUtc, CancellationToken ct)
     {

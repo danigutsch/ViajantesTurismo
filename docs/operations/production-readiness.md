@@ -14,9 +14,10 @@ execution history. A separate batch timeline shows the retention work completed 
 The job view identifies unregistered schedules, paused schedules, and recurring work due for a
 worker. An execution whose lease expired can have an unrecorded outcome.
 
-The `OperationsScheduleController` role can confirm pause, resume, queue, and retry actions. The
-audit records the actor, action, target, and reason. A queued manual run or retry waits while the
-schedule is paused. An active execution can finish.
+An Admin can confirm pause, resume, queue, and retry actions. Users with
+`OperationsScheduleController` retain that capability. The audit records the actor, action, target,
+and reason. A queued manual run or retry waits while the schedule is paused. An active execution can
+finish.
 
 ### Document maintenance scheduler rollout
 
@@ -29,8 +30,8 @@ that cadence intact.
 2. Stop every Admin instance from the previous polling release before starting the scheduler
    release. Those instances run their retention jobs outside lease coordination.
 3. Check that the three jobs have registered and that their runs and next due times appear in the
-   database-backed scheduling data. Apply the environment's approved operator role assignment before
-   exposing actions. Confirmed controls require `operations.schedule.control`.
+   database-backed scheduling data. Verify that the authenticated Admin can see the controls.
+   The API requires `operations.schedule.control` for each confirmed action.
 
 During an interruption, an unfinished execution can be recovered under the same run ID after its
 lease expires. Completed purge batches and their recorded evidence remain committed. If the
@@ -193,6 +194,27 @@ are product and operations decisions.
 The [document retention and legal-hold policy](document-retention-and-legal-hold.md) sets the
 retention periods for generated artifacts and audit records. Held data, backup expiry and
 restore-time suppression are tracked as follow-up work in that policy.
+
+## Provision one human Admin
+
+1. Provision one named human account in the deployment's trusted identity provider and assign its
+   application `Admin` role using the existing role mapping. Follow the
+   [OIDC and BFF configuration](../adr/20260711-provider-neutral-oidc-bff-authorization.md) and
+   the [configuration reference](../CONFIGURATION.md). The local AppHost realm is for conformance.
+2. Sign in to Management with that account. The same subject administers bookings, tours,
+   customers, payments, documents, Catalog and Branding. Public Web remains anonymous.
+3. In a non-production rehearsal, use that same subject to confirm pause, resume, queue, and retry
+   in **Document maintenance**. Verify that each accepted action records its actor, action, target,
+   and reason. Keep the deployed-environment smoke checks read-only.
+
+Keep the confidential Management client, service accounts, database runtime and migration
+principals, and CI credentials scoped to their own workloads.
+
+An Admin can save and explicitly approve the same payment draft. Optional independent review
+still requires a different reviewer. The [payment guide](../payments.md#staff-workflow) describes
+the confirmation and audit evidence. The proposed distinct-subject hold-release workflow
+remains governed by the [legal-hold policy](document-retention-and-legal-hold.md) and
+[hold-release follow-up](https://github.com/danigutsch/ViajantesTurismo/issues/1606).
 
 ## Management OIDC security store
 

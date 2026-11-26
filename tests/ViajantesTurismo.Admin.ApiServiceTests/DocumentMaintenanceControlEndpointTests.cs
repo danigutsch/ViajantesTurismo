@@ -124,18 +124,22 @@ public sealed class DocumentMaintenanceControlEndpointTests
     }
 
     [Theory]
-    [InlineData(DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Pause, DocumentMaintenanceControlAction.Pause)]
-    [InlineData(DocumentMaintenanceJob.Audit, DocumentMaintenanceControlKind.Resume, DocumentMaintenanceControlAction.Resume)]
-    [InlineData(DocumentMaintenanceJob.Idempotency, DocumentMaintenanceControlKind.Trigger, DocumentMaintenanceControlAction.Trigger)]
-    [InlineData(DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Retry, DocumentMaintenanceControlAction.Retry)]
+    [InlineData("Admin", DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Pause, DocumentMaintenanceControlAction.Pause)]
+    [InlineData("Admin", DocumentMaintenanceJob.Audit, DocumentMaintenanceControlKind.Resume, DocumentMaintenanceControlAction.Resume)]
+    [InlineData("Admin", DocumentMaintenanceJob.Idempotency, DocumentMaintenanceControlKind.Trigger, DocumentMaintenanceControlAction.Trigger)]
+    [InlineData("Admin", DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Retry, DocumentMaintenanceControlAction.Retry)]
+    [InlineData(ControllerRole, DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Pause, DocumentMaintenanceControlAction.Pause)]
+    [InlineData(ControllerRole, DocumentMaintenanceJob.Audit, DocumentMaintenanceControlKind.Resume, DocumentMaintenanceControlAction.Resume)]
+    [InlineData(ControllerRole, DocumentMaintenanceJob.Idempotency, DocumentMaintenanceControlKind.Trigger, DocumentMaintenanceControlAction.Trigger)]
+    [InlineData(ControllerRole, DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlKind.Retry, DocumentMaintenanceControlAction.Retry)]
     public async Task Typed_client_binds_each_confirmed_control_to_its_job_and_action(
-        DocumentMaintenanceJob job, DocumentMaintenanceControlKind kind, DocumentMaintenanceControlAction expected)
+        string role, DocumentMaintenanceJob job, DocumentMaintenanceControlKind kind, DocumentMaintenanceControlAction expected)
     {
         // Arrange
         var store = new RecordingMaintenanceControlStore(Result.Ok());
         await using var factory = AdminApiTestHost.Create(services => services.AddSingleton<IDocumentMaintenanceControlStore>(store));
         using var client = factory.CreateClient();
-        AdminApiTestHost.ConfigureAuthenticatedClient(client, ControllerRole);
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, role);
         var input = new CreateDocumentMaintenanceControlDto
         {
             RequestId = Guid.CreateVersion7(),
@@ -154,5 +158,7 @@ public sealed class DocumentMaintenanceControlEndpointTests
         received.Job.ShouldBe(job);
         received.Action.ShouldBe(expected);
         received.Input.ShouldBe(input);
+        received.ActorId.ShouldBe("test-user");
+        store.Reason.ShouldBe(Reason);
     }
 }

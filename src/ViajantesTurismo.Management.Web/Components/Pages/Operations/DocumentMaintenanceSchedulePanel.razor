@@ -184,7 +184,8 @@
     protected override async Task OnParametersSetAsync()
     {
         var user = Authentication is { } authentication ? (await authentication).User : null;
-        _authorized = user?.Identity?.IsAuthenticated == true && user.IsInRole(DocumentMaintenanceAccess.ControlRole);
+        _authorized = user?.Identity?.IsAuthenticated == true
+            && (user.IsInRole(DocumentMaintenanceAccess.AdminRole) || user.IsInRole(DocumentMaintenanceAccess.ControlRole));
         if (!CanControl)
         {
             ClearIntent();
