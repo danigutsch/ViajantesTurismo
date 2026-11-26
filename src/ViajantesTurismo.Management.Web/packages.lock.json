@@ -46,144 +46,144 @@
       },
       "PandaBear.SharedKernel.AspNetCore": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "14Y10RtGgzd18dH8jSmoARxvlsij1kPcM4jpD7aRNngO8zPvUkHW+prIUPBdzJJZPFp5UmpBdIRqQF2NYx1T8Q==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "7Bh4kCQBeBmUlEU213vJGT06s33r43HJH5RZr2wk4l7O4ZHBKfuLDFkLfGAv1Rm3X6cd38U9x/Cb6CgdIfwMJg==",
         "dependencies": {
-          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.AspNetCore.Authentication": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "9a0A7iCWDfyzgUKzF0N1ZWQjh12aZA43K5iEvXKcCZUV2ZBp3aQ2j+EcVpGP/L/PSgpqHSDW5gBh1O8DYEYG5g==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "3Bd3uwoXqB8pplmaBKNNVi3cB8/ukBebeCK+BTrWGjmTTlKi8FWKFh5ODB8pjruaA+/denQoCmj5uD25CokZQw==",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "11.0.0",
           "Microsoft.AspNetCore.OpenApi": "11.0.0",
           "Microsoft.OpenApi": "3.11.1",
-          "PandaBear.SharedKernel.AspNetCore": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.OpenApi": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.AspNetCore": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.OpenApi": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.AspNetCore.Authentication.Bff": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "mejqNu6oRLccSO3MbL2gJwkrxCUkMCq8ZMHsbQMl35MBnpoJOS7QJ9LolmjX5VjI1OXzsPI2rc7ZFu3Lr0hlbg==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "Aflck/DqyQJVuWXPyhPTcW8MVVTXshb0iyfzDqeVsUvPv6bam25ughfKhKnqqcXFs+9JmugRBcpyg51t4MMVxg==",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.OpenIdConnect": "11.0.0"
         }
       },
       "PandaBear.SharedKernel.AspNetCore.Seo": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "qIpGwJPaidFcxDTMka17480eBxizhzriuFedBAbZSFkBoGF/Qe8aApKxkSPs++r7omrjwjbGhehH5q+yqjV7nw==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "ucON/Ihr/Lau9RsYCH908Tg+eeAqkwt8NAI+HJwO01HBVh7epx2h+y0OgEx+CGJAIdFGheruh6BYrywctnfYyw==",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.ContentRights": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.ContentRights": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.Blazor": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "zJe8DI4frwFx9qeWwuglK3JoJ2r3mIk+uzSjn1rM+TQyXBaUbSYxclVOpwJJeASvOMwkCrefpFezufiLIakKqA==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "zbtn6wdgusWfH8DOe6XBskhFzrklJ2saM6tdbpwyUt0urJTqnGG10UH+22tzuw8ZRJFoDgPYJfPU44adHosvkA==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "11.0.0",
           "Microsoft.Extensions.Compliance.Redaction": "11.0.0",
           "Microsoft.Extensions.Http.Resilience": "11.0.0",
           "Microsoft.Extensions.Telemetry": "11.0.0",
-          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.Branding": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "6EwPcGYQkzxb76Y4Z1SyC5lbp0AN3nZUJqwtN0ZpwMB5RcpoVh/LbOFLW/F3m0IyNIilxKPnxKgZibSDZIs7cQ==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "IGQnDJIQxw82Ofg/bT69DJmuv8lDUaSbH9quiVJMNE7moIm+LPzDYWkPVw+0tnwYAxBXPlXdW0lXL9TUs1S+7g==",
         "dependencies": {
-          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.BuildingBlocks": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "R0fuUcCWaImLtMLMXUaa5FLaODVvCJjG68ctU49zJhl+1y6wSrmfcEwunXc0IUGl3LX/IfKAaNFxVOU5rzv7dg==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "0gWqbtcIiElL+2sX821Alr/9tRp+9U16YSvLtrq4xMbMuHUqNxzFh0J77lfQJWG6upHrpuJvZ/wcFkKiCyXAmg==",
         "dependencies": {
-          "PandaBear.SharedKernel.Domain": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.Domain": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.HttpCaching.AspNetCore": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "AtWDF9/xuWfffOnzeQl8RuG37wuM6QAZ7boUen65g6s+6TMKFI/AozLZK3iLt0l9LNpDRgqeuDWlaZZlbXczTg=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "BcnbyaJAgpiQ+eeim7cHvBJLC8dCd7p2emDQp5otWKjQHKzKGZPeE4tHOhPONGXO0pXyDgwO346PvkE7WaYkoA=="
       },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "KyJlM1HgEjG2wcXIGuOTeBM6xCOE0JJkiQGbOH8FQunskU9PO1wcGFnm4C3YFAs0jZLVswB9JE86Bd9P3zy5vA==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "JoEP8Chg5BTXlQOMiRPlGMnLUNlYSfclOX6TuTsZcvlMYAEqKHQwnaXNKucnDCjhK7ThE+CXUpaMcqL2jjXiFA==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "11.0.0",
           "Microsoft.Extensions.Compliance.Redaction": "11.0.0",
           "Microsoft.Extensions.Http.Resilience": "11.0.0",
           "Microsoft.Extensions.Telemetry": "11.0.0",
-          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.Idempotency.AspNetCore": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "VFxMbTz91aEWJOWKdExG1VABswvqscaYvsjZN8VckgaVKBocAkp0it4lXi32W0r3YUnSKOeiyroxLZqVk1/weQ==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "ReRAED9p2h7DNqgQVhvTae2kYKnLcdlsnzdFfP2f5+CjpVvIusII2pvK12k/1U2H8sIO6Sb7XDVOxqZI2RBZyw==",
         "dependencies": {
-          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.InputNormalization": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "OC7n8g+P3xhrNjhRSsT7X4XUX6bFte36Sujt2HD23+XhVg73zmXym7jMB2FeBFK4audMfbVUOUZ1OCxbqRb9ow=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "RjREzVXPD/qoXF8xYuXjo2U1NwlgnhQYBBa1gbdtGTh8YPomipb56zCOM85Mo2YOLiNTA3wuDdqqt8QbpC/B1Q=="
       },
       "PandaBear.SharedKernel.Npgsql": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "ci5jwWPKXS35NsWy/eH0UTKdHeO1DWJfJh3Z/0BadLobEtM7WSPdw8ZOsPZ2M+JytXpyNLGzTiRKYybROKQWag==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "nKhl/PshIUP3uToRtY+54kjIFjlSJ7lHeTJG+kKRqweXKC/KRdZ+XfDtOi9e46EEwNSX8Tm8AYzqRfbBAo22Ag==",
         "dependencies": {
           "Npgsql": "10.0.3"
         }
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "8H6uSLtJZbDc/TYORRCGPmDaJmaq7EjDRoBh4PT283tjaTVqPR88rnshdBVbXhtdJKBDyZhOzCOv77lVrrYgaQ=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "hF5VlsswIw4GZhKyG1CulZOhUWjuXtQcIQIWJm/FdfjNPMTnR5U25SisDU3x3ANDecJbr4cUM12J6Drj4WPQjA=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "JqVa3TkHUe5HTxx3DkPfhneKdvUgYbAxbtJ3FNoLWw49GBAGkbSO3wrLXjRcyhuW4NgoV7fQ60qhDMMHxJKpKg=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "6lyhem5zoYG7gFYLUl8HtFxRpwLDf4rfzFVrMVHNmwcHyc1ICQJwGoNgwXHir3oy954uXfTSVwYvtEkE9Kem9g=="
       },
       "PandaBear.SharedKernel.Tabular": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "/t0C2QT9PnBYrVXc7dLf3i/KJXA7h98cTN3sce4e9K1kzlaUd1w8XwhiuwZF3qWjdcNmVM/RX74FZBTvxNPnLA==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "S1uTi/zANhv2qjoOXFESmOkCctWDCxsTaMFSLRI1i5qvI7Fh860Cq/o5cTGnR2RT/DARaq3qBZ0ZdtP7HaAX8A==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.963.1"
         }
       },
       "Aspire.StackExchange.Redis": {
@@ -441,15 +441,15 @@
       },
       "PandaBear.SharedKernel.ApiVersioning": {
         "type": "Transitive",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "r1HYyRWwdF0mRjostM/OQyTjHOZ/UtzceqrVKfq4I0l/C3vFyYVHKBt9LFuoobNcO6a+mo6KWGUKD1ci8JquXg=="
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "XT9KbRHjaGU5Z+NwGAhuihfmf0b0RQbdDYiPjro8F9DUd92UtLvvE+YhRhI0XnOlJ/WRC0Gx2dxy+yJ5ChV5Og=="
       },
       "PandaBear.SharedKernel.ContentRights": {
         "type": "Transitive",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "9AtdlaJF0sere2rPB1OYy9stOqDClMKVtq9maV2vcclKqTE3cOwkne9gV8awTDo7isAH8myToI8aFBnlZSsd2A==",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "+HHUJ0bogsQ76SbNjU1Bie1dcBNmvp8bZ0Xzd+c9q+Efs5Z67OQ9lbQFoe73lbn67eYiuWgR7okHcbUMf3fF2g==",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.963.1"
         }
       },
       "Pipelines.Sockets.Unofficial": {
@@ -504,35 +504,35 @@
       "viajantesturismo.admin.contracts.application": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.954.1, )"
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.963.1, )"
         }
       },
       "viajantesturismo.admin.contracts.http": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.954.1, )",
+          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.963.1, )",
           "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.branding.contracts.http": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Blazor.Site": "[0.1.0-alpha.954.1, )",
-          "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.954.1, )",
-          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.954.1, )",
+          "PandaBear.SharedKernel.Blazor.Site": "[0.1.0-alpha.963.1, )",
+          "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.963.1, )",
+          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.963.1, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.catalog.contracts.application": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.954.1, )"
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.963.1, )"
         }
       },
       "viajantesturismo.catalog.contracts.http": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.954.1, )",
+          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.963.1, )",
           "ViajantesTurismo.Catalog.Contracts.Application": "[0.1.0-alpha.0, )"
         }
       },
@@ -554,9 +554,9 @@
           "OpenTelemetry.Extensions.Hosting": "[1.21.0, )",
           "OpenTelemetry.Instrumentation.EntityFrameworkCore": "[1.21.0-beta.1, )",
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.21.0-beta.1, )",
-          "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.954.1, )",
-          "PandaBear.SharedKernel.Observability": "[0.1.0-alpha.954.1, )",
-          "PandaBear.SharedKernel.ServiceDefaults": "[0.1.0-alpha.954.1, )",
+          "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.963.1, )",
+          "PandaBear.SharedKernel.Observability": "[0.1.0-alpha.963.1, )",
+          "PandaBear.SharedKernel.ServiceDefaults": "[0.1.0-alpha.963.1, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
@@ -649,33 +649,33 @@
       },
       "PandaBear.SharedKernel.Blazor.Site": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "Lmh3qNPjm/iRRXtYbchua1mt0n1hyj3Xb0fKuk9TnFhaLzdF01I7xgPdbJwt/QFro91lmlPNGQX8/YlrwG+2ig==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "LWQEWwzvI89nnLF6hgyHQ4td0eroFy0acxVJw4ptsWxZiQnJj3Upu7T9pyycAZ5FmIxBPpd9D3mxbuSvwdGFVg==",
         "dependencies": {
-          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.ContentRights": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.Domain": "0.1.0-alpha.954.1",
-          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.ContentRights": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.Domain": "0.1.0-alpha.963.1",
+          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.Domain": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "aTuvxdpQ8mc+2JAkdY7HbOPSm+oDwNfcvR/jNk6MquTM31otysZVqIWtrtS7631wRBtd2fJm8Ozx9Il1s0XO5w=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "DuinSYtjRzcxkCyBE906aIH/ZmNhcVnXqgRg+IERnQZ67yXBlrFqzLXxrJZhwXVAYtuqT69a3qPGbBFwf4zFHw=="
       },
       "PandaBear.SharedKernel.Idempotency.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "+gwwY4kqGjPsqJkfA9/9q4amG/xEa+b+nK7kfPRQF0pbkN26pEiD9OfSKPlMuSZgCKKNajqMnqMZyT1Nyc7VTQ=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "Wh+9gnNK50ysic8DZBmK5B52p7/Xt0V68aSwAhR78gRzchlyLQSTLanQJ9KJoEafPyfrA7kahuHt1OY6iijveA=="
       },
       "PandaBear.SharedKernel.Observability": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "HWWEz2TEH+0zytQutrBXJanvOluF2IAr6uehyUkE2p0O3Zjqcgf+crKFKDsD4i5sMWUv/fw/P+E4v3S9iwx6Eg==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "+PxNbzhp/D4XaONAhlYnsLGsy3IQAY17D2TqC+g9xGZMs8AX5cCbWmbHi3TuqWpOffIGDp0XLZahDrgjzoBEPA==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "11.0.0",
           "Microsoft.Extensions.Compliance.Redaction": "11.0.0",
@@ -687,26 +687,26 @@
       },
       "PandaBear.SharedKernel.OpenApi": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "v2EL71FnsubS5J88aL5K9nbJrEJhwVObj2kG2OCU3624iWCqHZ2uNhyzRxpG7FWMPSSATWFkffAJWyGOLCk42A==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "2Y3z0siy6F+EPpPC/IFnxMdMoMGMFxHZisz1UzNcosgrnfdHMn1C7rtzGuX2ckyRLP4+2Ml3SxRfK8S8u+Cssg==",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "11.0.0",
           "Microsoft.OpenApi": "3.11.1",
-          "PandaBear.SharedKernel.ApiVersioning": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.ApiVersioning": "0.1.0-alpha.963.1"
         }
       },
       "PandaBear.SharedKernel.Results": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "753uKjPcVpSc6Y7UTzr8h9Lkdtcnhah/cqgGts9bpqEU/KHYrUu/A15jVtFAA1tqyQTJ/e23XYM5lMN3QK1zRw=="
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "+b+xFN7B9KzkVL9rZgYQqGnppcqnE+e5AEatgdJ4Ynm5jrkB85bvs8sG8cYAtBv25f3MUDlW9VtlPejJxQ2Yng=="
       },
       "PandaBear.SharedKernel.ServiceDefaults": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.954.1, )",
-        "resolved": "0.1.0-alpha.954.1",
-        "contentHash": "afNEYzrgyAJUK3Hve3QfzzRaLFZVy1xVrflQ+KEuGsE5pCNuh7AYx0bX4FdBna6vCqaWMEByvS/IrqyX6hwWBg==",
+        "requested": "[0.1.0-alpha.963.1, )",
+        "resolved": "0.1.0-alpha.963.1",
+        "contentHash": "6+4DPEdJTZUCxfvR22O4qE74+syP5KGBslFPzVE5aWIB4GuFqitOfEG7O8mVjexBhF2n4u6Yi0uEeCjnNQNeEQ==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "11.0.0",
           "Microsoft.Extensions.Compliance.Redaction": "11.0.0",
@@ -719,7 +719,7 @@
           "OpenTelemetry.Instrumentation.AspNetCore": "1.21.0",
           "OpenTelemetry.Instrumentation.Http": "1.21.0",
           "OpenTelemetry.Instrumentation.Runtime": "1.21.0",
-          "PandaBear.SharedKernel.Observability": "0.1.0-alpha.954.1"
+          "PandaBear.SharedKernel.Observability": "0.1.0-alpha.963.1"
         }
       }
     }
