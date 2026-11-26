@@ -59,7 +59,8 @@ public static class BrandingInfrastructureDependencyInjection
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<BrandingDbContext>(IntegrationEventConsumerNames.Admin);
         if (addOutboxRelay)
         {
-            builder.Services.AddIntegrationEventOutboxRelay<BrandingDbContext>();
+            builder.Services.AddIntegrationEventOutboxRelay<BrandingDbContext>(
+                static options => options.StorePublishExceptionTypeOnly = true);
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<BrandingDbContext>();
             builder.Services.AddHostedService<BrandingLogoReclamationHostedService>();
         }

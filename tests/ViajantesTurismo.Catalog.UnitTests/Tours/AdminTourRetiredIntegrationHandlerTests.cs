@@ -60,13 +60,18 @@ public sealed class AdminTourRetiredIntegrationHandlerTests
 
         await retire.Handle(retired, ct);
         await create.Handle(created, ct);
-        await retire.Handle(retired, ct);
+        await retire.Handle(retired with
+        {
+            EventId = Guid.CreateVersion7()
+        }, ct);
         var stream = await eventStore.Load(CatalogTourStreamIds.FromAdminTourId(adminTourId), afterRevision: null, ct);
         var rehydrated = CatalogTour.Rehydrate(stream.OrderBy(envelope => envelope.Revision.Value).Select(envelope => envelope.Data));
 
         // Assert
         stream.Select(envelope => envelope.Data).OfType<CatalogTourDraftCreated>().Count().ShouldBe(createFirst ? 1 : 0);
-        var retirement = stream.Select(envelope => envelope.Data).OfType<CatalogTourRetired>().ShouldHaveSingleItem();
+        var recordedRetirement = stream.ShouldHaveSingleItem(envelope => envelope.Data is CatalogTourRetired);
+        recordedRetirement.CausationEventId.ShouldBe(retired.EventId);
+        var retirement = recordedRetirement.Data.ShouldBeOfType<CatalogTourRetired>();
         retirement.AdminTourId.ShouldBe(adminTourId);
         retirement.RetirementId.ShouldBe(retired.RetirementId);
         rehydrated.IsPublished.ShouldBeFalse();

@@ -27,7 +27,8 @@ internal static class ManagementWebEndpointTestHost
     public static async Task<IHost> StartWithRecordingAuthentication(
         CancellationToken ct,
         ICatalogToursApiClient? catalogToursApi = null,
-        IDocumentsApiClient? documentsApiClient = null)
+        IDocumentsApiClient? documentsApiClient = null,
+        ICatalogGalleryOperationsApiClient? galleryOperationsApi = null)
     {
         return await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
@@ -51,6 +52,11 @@ internal static class ManagementWebEndpointTestHost
                     if (documentsApiClient is not null)
                     {
                         services.AddSingleton(documentsApiClient);
+                    }
+
+                    if (galleryOperationsApi is not null)
+                    {
+                        services.AddSingleton(galleryOperationsApi);
                     }
                 })
                 .Configure(app =>

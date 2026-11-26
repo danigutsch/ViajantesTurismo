@@ -3,6 +3,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Tours;
 /// <summary>Persists one independently acknowledged gallery placement intent.</summary>
 internal sealed class CatalogGalleryPlacementIntentEntity
 {
+    /// <summary>The durable Catalog Gallery intent journal table.</summary>
+    internal const string TableName = "CatalogGalleryPlacementIntents";
+
     /// <summary>Gets the stable identity of the local wake-up and the corresponding intent.</summary>
     public Guid Id
     {
@@ -19,6 +22,13 @@ internal sealed class CatalogGalleryPlacementIntentEntity
 
     /// <summary>Gets the assigned per-tour sequence.</summary>
     public long Sequence
+    {
+        get;
+        init;
+    }
+
+    /// <summary>Gets when the request was accepted, when known for an existing journal row.</summary>
+    public DateTimeOffset? AcceptedAtUtc
     {
         get;
         init;

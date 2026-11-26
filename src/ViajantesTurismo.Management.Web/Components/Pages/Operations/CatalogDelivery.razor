@@ -1,0 +1,188 @@
+@page "/operations/messaging/catalog-delivery"
+@using SharedKernel.AspNetCore.Authentication.Bff
+@attribute [Authorize(Roles = "Admin")]
+@inject IMessagingHealthApiClient MessagingApi
+@inject TimeProvider Clock
+
+<PageTitle>Catalog deliveries</PageTitle>
+
+<h1 tabindex="-1" @ref="_heading">Catalog deliveries</h1>
+<p><a href="operations">Back to operations</a></p>
+
+<form class="d-flex flex-wrap align-items-end gap-3 mb-3" @onsubmit="Search" @onsubmit:preventDefault>
+    <div>
+        <label for="delivery-event-id" class="form-label">Event ID</label>
+        <input id="delivery-event-id" class="form-control" @bind="_eventId" />
+    </div>
+    <div>
+        <label for="delivery-event-type" class="form-label">Event type</label>
+        <input id="delivery-event-type" class="form-control" @bind="_eventType" />
+    </div>
+    <div>
+        <label for="delivery-recorded-since" class="form-label">Recorded since (UTC)</label>
+        <input id="delivery-recorded-since" class="form-control" type="date" @bind="_recordedSince" />
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@_loading">Search</button>
+</form>
+
+@if (_loading)
+{
+    <p role="status">Loading Catalog deliveries…</p>
+}
+else if (_page is null)
+{
+    <p role="alert">Catalog delivery metadata is unavailable.</p>
+}
+else if (_page.Rows.Count == 0)
+{
+    <p role="status">No unfinished Catalog deliveries match this search.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <caption class="visually-hidden">Unfinished Admin-to-Catalog deliveries</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Event ID</th>
+                    <th scope="col">Event type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Last failure</th>
+                    <th scope="col">Attempts</th>
+                    <th scope="col">Recorded (UTC)</th>
+                    <th scope="col">Last attempt (UTC)</th>
+                    <th scope="col">Next attempt (UTC)</th>
+                    <th scope="col">Failed (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _page.Rows)
+                {
+                    <tr @key="row.StorageId">
+                        <td><code>@row.EventId</code></td>
+                        <td>@row.EventType</td>
+                        <td>@GetStatus(row)</td>
+                        <td>@LastFailure(row)</td>
+                        <td>@row.Attempts</td>
+                        <td>@FormatTime(row.RecordedAt)</td>
+                        <td>@FormatTime(row.LastAttemptAt)</td>
+                        <td>@FormatTime(row.NextAttemptAt)</td>
+                        <td>@FormatTime(row.TerminalAt)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (!_loading && (_page is not null || _loadedFilters.AfterRecordedAt.HasValue))
+{
+    <nav aria-label="Catalog delivery pages" class="d-flex gap-3">
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!_loadedFilters.AfterRecordedAt.HasValue)" @onclick="FirstPage">First page</button>
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!HasNextPage)" @onclick="NextPage">Next page</button>
+    </nav>
+}
+
+<section class="mt-4" aria-labelledby="catalog-inbox-heading">
+    <h2 id="catalog-inbox-heading" tabindex="-1" @ref="_inboxHeading">Completed inbox duplicates</h2>
+    @if (_showInbox || InboxRequested)
+    {
+        <CatalogInboxEvidence @key="InboxLinkEventId" InitialEventId="@InboxLinkEventId" FocusHeading="FocusInboxHeading" />
+    }
+    else
+    {
+        <button type="button" class="btn btn-outline-secondary" @onclick="ShowInbox">Inspect completed duplicates</button>
+    }
+</section>
+
+@code {
+    private CatalogDeliveryFilters _loadedFilters = new();
+    private GetCatalogDeliveryPageDto? _page;
+    private string? _eventId;
+    private string? _eventType;
+    private DateOnly? _recordedSince;
+    private DateTimeOffset _loadedAt;
+    private ElementReference _heading;
+    private ElementReference _inboxHeading;
+    private bool _loading = true;
+    private bool _showInbox;
+
+    [SupplyParameterFromQuery(Name = "view")]
+    private string? RequestedView { get; set; }
+
+    [SupplyParameterFromQuery(Name = "eventId")]
+    private string? RequestedInboxEventId { get; set; }
+
+    private bool InboxRequested => string.Equals(RequestedView, "inbox", StringComparison.Ordinal);
+
+    private string? InboxLinkEventId => InboxRequested ? RequestedInboxEventId : null;
+
+    private bool HasNextPage => _page is { NextRecordedAt: not null, NextStorageId: not null };
+
+    protected override Task OnInitializedAsync() => Load(_loadedFilters);
+
+    private async Task ShowInbox()
+    {
+        _showInbox = true;
+        await FocusInboxHeading();
+    }
+
+    private Task FocusInboxHeading() => FocusHelper.TryFocus(_inboxHeading).AsTask();
+
+    private Task Search()
+    {
+        DateTimeOffset? since = _recordedSince is { } date
+            ? new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            : null;
+        return Load(new CatalogDeliveryFilters(_eventId?.Trim(), _eventType?.Trim(), since));
+    }
+
+    private Task FirstPage() => Load(_loadedFilters with { AfterRecordedAt = null, AfterStorageId = null }, moveFocus: true);
+
+    private Task NextPage() => _page is { NextRecordedAt: { } recordedAt, NextStorageId: { } storageId }
+        ? Load(_loadedFilters with { AfterRecordedAt = recordedAt, AfterStorageId = storageId }, moveFocus: true)
+        : Task.CompletedTask;
+
+    private async Task Load(CatalogDeliveryFilters filters, bool moveFocus = false)
+    {
+        _loading = true;
+        _loadedFilters = filters;
+        if (moveFocus)
+        {
+            await FocusHelper.TryFocus(_heading);
+        }
+
+        try
+        {
+            var outcome = await MessagingApi.ReadCatalogDelivery(filters, CancellationToken.None);
+            _page = outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+            _loadedAt = Clock.GetUtcNow();
+        }
+        catch (UserTokenUnavailableException)
+        {
+            _page = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string GetStatus(CatalogDeliveryRowDto row) => row switch
+    {
+        { TerminalAt: not null } => "Terminal failure",
+        { NextAttemptAt: { } nextAttempt } when nextAttempt <= _loadedAt => "Retry due",
+        { NextAttemptAt: not null } => "Retry scheduled",
+        _ => "Pending"
+    };
+
+    private static string LastFailure(CatalogDeliveryRowDto row) => row switch
+    {
+        { TerminalAt: not null } => "Final consumption failure",
+        { Attempts: > 0 } or { LastAttemptAt: not null } => "Consumption failed",
+        _ => "—"
+    };
+
+    private static string FormatTime(DateTimeOffset? time) =>
+        time?.UtcDateTime.ToString("u", CultureInfo.InvariantCulture) ?? "—";
+}

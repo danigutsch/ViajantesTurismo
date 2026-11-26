@@ -1,0 +1,174 @@
+@using SharedKernel.AspNetCore.Authentication.Bff
+@using ViajantesTurismo.Catalog.Contracts.Application
+@using ViajantesTurismo.Catalog.Contracts.Http
+@inject ICatalogInboxOperationsApiClient InboxApi
+
+@if (_health is { } health)
+{
+    @if (!string.IsNullOrWhiteSpace(health.ConsumerName))
+    {
+        <p>Inbox consumer <code>@health.ConsumerName</code></p>
+    }
+    <p>@health.DuplicateCount duplicate deliveries across @health.EntriesWithDuplicates retained events.</p>
+    @if (health.LastObservedAt is { } lastObserved)
+    {
+        <p>Latest duplicate (UTC) <time datetime="@lastObserved.ToString("O", CultureInfo.InvariantCulture)">@FormatTime(lastObserved)</time></p>
+    }
+}
+else if (_healthUnavailable)
+{
+    <p role="alert">Catalog inbox totals are unavailable.</p>
+}
+
+<form class="d-flex flex-wrap align-items-end gap-3 mb-3" @onsubmit="Search" @onsubmit:preventDefault>
+    <div>
+        <label for="catalog-inbox-event-id" class="form-label">Completed event ID</label>
+        <input id="catalog-inbox-event-id" class="form-control" @bind="_eventId" />
+    </div>
+    <div>
+        <label for="catalog-inbox-observed-since" class="form-label">Observed since (UTC)</label>
+        <input id="catalog-inbox-observed-since" class="form-control" type="datetime-local"
+               @bind="_observedSince" @bind:format="yyyy-MM-ddTHH:mm" />
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@_loading">Search duplicates</button>
+</form>
+
+@if (_loading)
+{
+    <p role="status">Loading Catalog duplicates…</p>
+}
+else if (_invalidEventId)
+{
+    <p role="alert">Enter a valid event ID.</p>
+}
+else if (_page is null)
+{
+    <p role="alert">Catalog inbox history is unavailable.</p>
+}
+else if (_page.Rows.Count == 0)
+{
+    <p role="status">No completed duplicates match this search.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <caption class="visually-hidden">Completed Catalog duplicate deliveries</caption>
+            <thead><tr><th scope="col">Event ID</th><th scope="col">Duplicates</th><th scope="col">Last observed (UTC)</th></tr></thead>
+            <tbody>
+                @foreach (var row in _page.Rows)
+                {
+                    <tr @key="row.EventId">
+                        <td><code>@row.EventId</code></td>
+                        <td>@row.DuplicateCount</td>
+                        <td>@FormatTime(row.LastObservedAt)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (!_loading && !_invalidEventId && (_page is not null || _filters.AfterObservedAt.HasValue))
+{
+    <nav aria-label="Catalog inbox pages" class="d-flex gap-3">
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!_filters.AfterObservedAt.HasValue)" @onclick="FirstPage">First duplicate page</button>
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!HasNextPage)" @onclick="NextPage">Next duplicate page</button>
+    </nav>
+}
+
+@code {
+    /// <summary>Focuses the enclosing inbox heading before an existing page control is replaced.</summary>
+    [Parameter]
+    public EventCallback FocusHeading { get; set; }
+
+    /// <summary>Gets or sets the optional event ID supplied by an inbox link.</summary>
+    [Parameter]
+    public string? InitialEventId { get; set; }
+
+    private CatalogInboxDuplicateFilters _filters = new();
+    private GetCatalogInboxHealthDto? _health;
+    private GetCatalogInboxDuplicatePageDto? _page;
+    private string? _eventId;
+    private DateTime? _observedSince;
+    private bool _healthUnavailable;
+    private bool _invalidEventId;
+    private bool _loading = true;
+
+    private bool HasNextPage => _page is { NextObservedAt: not null, NextEventId: not null };
+
+    protected override Task OnInitializedAsync()
+    {
+        _eventId = InitialEventId;
+        return Task.WhenAll(LoadHealth(), LoadSearch(requireEventId: InitialEventId is not null));
+    }
+
+    private async Task LoadHealth()
+    {
+        try
+        {
+            var outcome = await InboxApi.ReadHealth(CancellationToken.None);
+            _health = outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            _health = null;
+        }
+
+        _healthUnavailable = _health is null;
+    }
+
+    private Task Search() => LoadSearch(requireEventId: false);
+
+    private Task LoadSearch(bool requireEventId)
+    {
+        var hasEventId = requireEventId || !string.IsNullOrWhiteSpace(_eventId);
+        var eventId = Guid.Empty;
+        if (hasEventId && (!Guid.TryParse(_eventId, out eventId) || eventId == Guid.Empty))
+        {
+            _loading = false;
+            _invalidEventId = true;
+            _page = null;
+            return Task.CompletedTask;
+        }
+
+        DateTimeOffset? observedSince = _observedSince is { } time
+            ? new DateTimeOffset(DateTime.SpecifyKind(time, DateTimeKind.Utc))
+            : null;
+        return Load(new CatalogInboxDuplicateFilters(EventId: hasEventId ? eventId : null, ObservedSince: observedSince));
+    }
+
+    private Task FirstPage() => Load(_filters with { AfterObservedAt = null, AfterEventId = null }, moveFocus: true);
+
+    private Task NextPage() => _page is { NextObservedAt: { } observedAt, NextEventId: { } eventId }
+        ? Load(_filters with { AfterObservedAt = observedAt, AfterEventId = eventId }, moveFocus: true)
+        : Task.CompletedTask;
+
+    private async Task Load(CatalogInboxDuplicateFilters filters, bool moveFocus = false)
+    {
+        _loading = true;
+        _invalidEventId = false;
+        _filters = filters;
+        _page = null;
+        if (moveFocus)
+        {
+            await FocusHeading.InvokeAsync();
+        }
+
+        try
+        {
+            var outcome = await InboxApi.ReadPage(filters, CancellationToken.None);
+            _page = outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            _page = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatTime(DateTimeOffset value) => value.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture);
+}

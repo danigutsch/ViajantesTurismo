@@ -9,6 +9,110 @@ public sealed class MigrationOnlinePostgreSqlTests(PostgreSqlTestServerFixture f
     : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Fact]
+    public async Task Installs_and_reconciles_the_gallery_indexes_after_a_verified_owner_interruption()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = new MigrationExecutionPostgreSqlScenario(await fixture.CreateDatabase(ct));
+        await scenario.Provision(ct);
+        await ProvisionEventStore(scenario, ct);
+        var steps = MigrationOnlineTestSteps.Gallery("""
+            SELECT current_user LIKE 'mig_check_%'
+                AND pg_catalog.current_setting('transaction_read_only') = 'on'
+                AND NOT pg_catalog.has_schema_privilege(current_user, 'event_sourcing', 'CREATE')
+            FROM pg_catalog.pg_advisory_xact_lock(813043);
+            """);
+        var manifest = await scenario.WriteManifest("gallery-online", steps, ct);
+        await using var held = await scenario.HoldGate(ct);
+
+        // Act
+        var active = scenario.Run(manifest, ct);
+        _ = await scenario.AwaitBlockedExecutor(ct);
+        var committedOutcome = await scenario.Read<string>(new NpgsqlCommand("""
+            SELECT indexrelid::text FROM pg_catalog.pg_index
+            WHERE indisvalid AND indexrelid = 'event_sourcing.ix_catalog_events_gallery_intent_outcome'::regclass;
+            """), ct);
+        await scenario.InterruptOwner(ct);
+        await held.CloseAsync();
+        var interrupted = await active;
+        var retry = await scenario.Run(manifest, ct);
+        var installed = await scenario.Read<string>(new NpgsqlCommand("""
+            SELECT string_agg(indexrelid::text, ',' ORDER BY indnkeyatts DESC)
+            FROM pg_catalog.pg_index
+            WHERE indisvalid AND indisready AND indislive AND indpred IS NOT NULL
+              AND indexrelid IN ('event_sourcing.ix_catalog_events_gallery_intent_outcome'::regclass,
+                                 'event_sourcing.ix_catalog_events_tour_retirement'::regclass);
+            """), ct);
+        var retained = await scenario.Read<int>(new NpgsqlCommand("""
+            SELECT count(*)::integer FROM event_sourcing.events WHERE stream_id = 'reviewed-gallery-fixture';
+            """), ct);
+
+        // Assert
+        interrupted.ExitCode.ShouldBe(1);
+        retry.ExitCode.ShouldBe(0);
+        retry.Error.ShouldBe(string.Empty);
+        installed.ShouldStartWith(committedOutcome + ",", StringComparison.Ordinal);
+        retained.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("key")]
+    [InlineData("predicate")]
+    [InlineData("include")]
+    public async Task Refuses_a_gallery_index_with_different_semantics(string mismatch)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = new MigrationExecutionPostgreSqlScenario(await fixture.CreateDatabase(ct));
+        await scenario.Provision(ct);
+        await ProvisionEventStore(scenario, ct);
+        await using var owner = await scenario.OpenMigrationOwner(asBranding: false, ct);
+        await using var existing = mismatch switch
+        {
+            "key" => new NpgsqlCommand(MigrationOnlineTestSteps.GalleryWrongKeySql, owner),
+            "predicate" => new NpgsqlCommand(MigrationOnlineTestSteps.GalleryWrongPredicateSql, owner),
+            _ => new NpgsqlCommand(MigrationOnlineTestSteps.GalleryWrongIncludeSql, owner)
+        };
+        await existing.ExecuteNonQueryAsync(ct);
+        var manifest = await scenario.WriteManifest("gallery-conflict", MigrationOnlineTestSteps.Gallery("SELECT true;"), ct);
+
+        // Act
+        var result = await scenario.Run(manifest, ct);
+        var attempts = await scenario.Read<int>(new NpgsqlCommand("""
+            SELECT count(*)::integer FROM governed_migration.attempts WHERE migration_id = 'gallery-conflict';
+            """), ct);
+
+        // Assert
+        result.ExitCode.ShouldBe(1);
+        result.Error.ShouldContain("online_index_conflict", StringComparison.Ordinal);
+        attempts.ShouldBe(0);
+    }
+
+    private static async Task ProvisionEventStore(MigrationExecutionPostgreSqlScenario scenario, CancellationToken ct)
+    {
+        await scenario.ProvisionCatalogEventStoreSchema(ct);
+        var baseline = await MigrationBaselineFixture.ReadScript("catalog-event-store", ct);
+        // The fixture already provisioned the schema. Applying this first statement would require database CREATE.
+        const string createSchema = """CREATE SCHEMA IF NOT EXISTS "event_sourcing";""";
+        baseline.ShouldStartWith(createSchema, StringComparison.Ordinal);
+        var manifest = await scenario.WriteManifest("gallery-index-fixture",
+        [
+            new("expand", baseline[createSchema.Length..]),
+            new("expand", """
+                INSERT INTO event_sourcing.event_streams (stream_id, stream_revision, created_at_utc, updated_at_utc)
+                VALUES ('reviewed-gallery-fixture', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                INSERT INTO event_sourcing.events (event_id, stream_id, stream_revision, event_type, payload_json, recorded_at_utc)
+                VALUES ('6305147d-6ac6-4755-9a42-4d2df31cdb96', 'reviewed-gallery-fixture', 1, 'catalog.tours.gallery-changed.v1',
+                        '{"IntentId":"bcacc515-bb7e-40b9-a4d2-fe19dec2da25","IntentSequence":1}', CURRENT_TIMESTAMP);
+                """),
+            new("verify", "SELECT true;")
+        ], ct);
+        var provision = await scenario.Run(manifest, ct);
+        provision.Error.ShouldBe(string.Empty);
+        provision.ExitCode.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Creates_a_concurrent_index_and_completes_only_after_read_only_verification()
     {
         // Arrange

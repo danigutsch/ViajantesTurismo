@@ -25,6 +25,8 @@ internal static class AdminAuthorization
     public const string DocumentHold = "document.hold";
     /// <summary>Permission to read generated error documentation.</summary>
     public const string DocumentationRead = "documentation.read";
+    /// <summary>Permission to read Admin messaging and delivery state.</summary>
+    public const string OperationsRead = "operations.read";
     /// <summary>Permission to read document maintenance schedules and their execution history.</summary>
     public const string OperationsScheduleRead = "operations.schedule.read";
     /// <summary>Permission to perform confirmed and audited maintenance controls.</summary>
@@ -61,6 +63,7 @@ internal static class AdminAuthorization
                 DocumentManage,
                 DocumentHold,
                 DocumentationRead,
+                OperationsRead,
                 OperationsScheduleRead,
                 OperationsScheduleControl,
                 PaymentManage,

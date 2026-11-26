@@ -5,6 +5,7 @@ using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Catalog;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
+using ViajantesTurismo.Management.Web.Components.Pages.Operations;
 using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 using ViajantesTurismo.Resources;
 using SharedKernel.ServiceDefaults;
@@ -26,6 +27,7 @@ builder.Services.AddUiFailureReporting();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddCountryService();
+OperationsDashboardThresholds.AddOptions(builder.Services);
 
 builder.Services.AddHttpClient<IToursApiClient, ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
@@ -45,6 +47,8 @@ builder.Services.AddHttpClient<IDocumentMaintenanceExecutionsApiClient, Document
     .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
 builder.Services.AddHttpClient<IDocumentMaintenanceControlApiClient, DocumentMaintenanceControlApiClient>(
     client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IMessagingHealthApiClient, MessagingHealthApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
 builder.Services.AddCatalogWorkflows();
 builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))

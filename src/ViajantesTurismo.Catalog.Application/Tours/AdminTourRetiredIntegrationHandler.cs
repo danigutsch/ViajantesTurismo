@@ -28,7 +28,7 @@ public sealed class AdminTourRetiredIntegrationHandler(
             {
                 try
                 {
-                    await eventStore.Append(streamId, expected, pending, ct).ConfigureAwait(false);
+                    await eventStore.Append(streamId, expected, pending, notification.EventId, ct).ConfigureAwait(false);
                 }
                 catch (ExpectedStreamRevisionConflictException) when (attempt < 4)
                 {

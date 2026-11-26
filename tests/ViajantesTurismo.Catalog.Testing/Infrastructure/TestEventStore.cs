@@ -16,6 +16,29 @@ internal sealed class TestEventStore : IEventStore
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
         IReadOnlyCollection<object> events,
+        CancellationToken ct) => AppendEvents(streamId, expectedRevision, events, causationEventId: null, ct);
+
+    /// <inheritdoc />
+    public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
+        StreamId streamId,
+        ExpectedStreamRevision expectedRevision,
+        IReadOnlyCollection<object> events,
+        Guid causationEventId,
+        CancellationToken ct)
+    {
+        if (causationEventId == Guid.Empty)
+        {
+            throw new ArgumentException("The causation event identifier must be nonempty.", nameof(causationEventId));
+        }
+
+        return AppendEvents(streamId, expectedRevision, events, causationEventId, ct);
+    }
+
+    private ValueTask<IReadOnlyCollection<EventEnvelope>> AppendEvents(
+        StreamId streamId,
+        ExpectedStreamRevision expectedRevision,
+        IReadOnlyCollection<object> events,
+        Guid? causationEventId,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(events);
@@ -23,7 +46,7 @@ internal sealed class TestEventStore : IEventStore
 
         lock (gate)
         {
-            return ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>(AppendCore(streamId, expectedRevision, events));
+            return ValueTask.FromResult<IReadOnlyCollection<EventEnvelope>>(AppendCore(streamId, expectedRevision, events, causationEventId));
         }
     }
 
@@ -115,7 +138,8 @@ internal sealed class TestEventStore : IEventStore
     private List<EventEnvelope> AppendCore(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
-        IReadOnlyCollection<object> events)
+        IReadOnlyCollection<object> events,
+        Guid? causationEventId = null)
     {
         var stream = GetOrCreateStream(streamId);
         EnsureExpectedRevision(streamId, stream.Count, expectedRevision);
@@ -132,7 +156,10 @@ internal sealed class TestEventStore : IEventStore
                 Guid.CreateVersion7(),
                 domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
                 domainEvent,
-                TimeProvider.System.GetUtcNow());
+                TimeProvider.System.GetUtcNow())
+            {
+                CausationEventId = causationEventId,
+            };
             stream.Add(envelope);
             appended.Add(envelope);
         }

@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -13,7 +14,9 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// Read-only DbContext optimized for query operations following CQRS pattern.
 /// Configured with NoTracking behavior for improved performance.
 /// </summary>
-internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> options) : DbContext(options)
+internal sealed class AdminReadDbContext(
+    DbContextOptions<AdminReadDbContext> options,
+    IEnumerable<IDbContextConfiguration<AdminReadDbContext>>? configurations = null) : DbContext(options)
 {
     /// <summary>Tours queried without tracking.</summary>
     public DbSet<Tour> Tours => Set<Tour>();
@@ -42,6 +45,11 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         modelBuilder.ApplyConfiguration(new DocumentArtifactBodyConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditPurgeConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentRetentionPurgeConfiguration());
+
+        foreach (var configuration in configurations ?? [])
+        {
+            configuration.ConfigureModel(modelBuilder);
+        }
     }
 
     public override int SaveChanges()

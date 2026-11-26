@@ -24,11 +24,21 @@ public sealed class HostedTestFixture : IAsyncLifetime
 {
     /// <summary>Identifies the isolated Admin stack for document endpoint tests.</summary>
     internal const string DocumentApiStack = "document-api";
+    /// <summary>Owns the dedicated Catalog inbox inspection database and identity realm.</summary>
+    internal const string CatalogInboxOperationsStack = "catalog-inbox-operations";
+    /// <summary>Owns the isolated Catalog inbox database and Management browser identity realm.</summary>
+    internal const string CatalogInboxBrowserStack = "catalog-inbox-browser";
+    /// <summary>Owns the Gallery candidate database and Management browser identity realm.</summary>
+    internal const string CatalogGalleryDashboardStack = "catalog-gallery-dashboard";
 
     private const string CollectorName = "opentelemetry-collector";
     private const string FixtureDatabaseName = "fixture";
     private static readonly TimeSpan StartBudget = TimeSpan.FromMinutes(3);
-    private static readonly string[] Stacks = ["api", DocumentApiStack, "system", "concurrent-a", "concurrent-b"];
+    private static readonly string[] Stacks =
+    [
+        "api", DocumentApiStack, CatalogInboxOperationsStack, CatalogInboxBrowserStack,
+        CatalogGalleryDashboardStack, "system", "concurrent-a", "concurrent-b"
+    ];
 
     private readonly ConcurrentDictionary<string, string> conformanceUserIds = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, HostedProfile> profiles = new(StringComparer.Ordinal);

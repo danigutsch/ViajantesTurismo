@@ -62,6 +62,39 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.ToTable("idempotency_keys", "messaging");
                 });
 
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventInboxDuplicateObservation", b =>
+                {
+                    b.Property<string>("Scope")
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ConsumerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("DuplicateCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("LastObservedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Scope", "Key");
+
+                    b.HasIndex("ConsumerName", "EventId")
+                        .IsUnique();
+
+                    b.HasIndex("ConsumerName", "LastObservedAt", "EventId")
+                        .IsDescending(false, true, true);
+
+                    b.ToTable("integration_event_inbox_duplicates", "messaging");
+                });
+
             modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -370,6 +403,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("AcceptedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("AppendsUploadedPhoto")
                         .HasColumnType("boolean");
 
@@ -507,6 +543,15 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.HasKey("AdminTourId");
 
                     b.ToTable("CatalogTourRetirements", (string)null);
+                });
+
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventInboxDuplicateObservation", b =>
+                {
+                    b.HasOne("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", null)
+                        .WithOne()
+                        .HasForeignKey("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventInboxDuplicateObservation", "Scope", "Key")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Catalog.Domain.Media.PublicMediaImage", b =>

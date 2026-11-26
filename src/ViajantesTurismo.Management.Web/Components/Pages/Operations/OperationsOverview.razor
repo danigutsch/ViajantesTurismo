@@ -1,0 +1,196 @@
+@page "/operations"
+@attribute [Authorize(Roles = "Admin")]
+@implements IDisposable
+@using SharedKernel.AspNetCore.Authentication.Bff
+@using ViajantesTurismo.Catalog.Contracts.Application
+@using ViajantesTurismo.Catalog.Contracts.Http
+@inject IDocumentMaintenanceApiClient MaintenanceApi
+@inject IMessagingHealthApiClient MessagingApi
+@inject ICatalogInboxOperationsApiClient InboxApi
+@inject ICatalogGalleryOperationsApiClient GalleryApi
+@inject IWebHostEnvironment HostEnvironment
+@inject TimeProvider Clock
+
+<PageTitle>Operations</PageTitle>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+        <h1>Operations</h1>
+        <p class="text-body-secondary mb-0">@HostEnvironment.EnvironmentName environment · Read-only</p>
+    </div>
+    <button type="button" class="btn @(_loading ? "btn-outline-secondary" : "btn-outline-primary")"
+            aria-disabled="@(_loading ? "true" : "false")" @onclick="Refresh">Refresh</button>
+</div>
+
+@if (_loading)
+{
+    <p role="status">Loading operations health…</p>
+}
+else
+{
+    @if (_maintenanceLoadFailed)
+    {
+        <p role="alert">Document maintenance status is unavailable.</p>
+    }
+    @if (_messagingLoadFailed)
+    {
+        <p role="alert">Messaging health is unavailable.</p>
+    }
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
+        <OperationsMetricCard HeadingId="scheduled-jobs" Title="Scheduled jobs"
+                              Count="@_maintenance?.Schedules.Count(schedule => schedule.IsPaused.HasValue)"
+                              ThresholdCount="@DueScheduleCount"
+                              Description="Registered document maintenance schedules."
+                              EmptyMessage="No document maintenance schedule is registered."
+                              DetailsHref="@MaintenanceHref" DetailsLabel="View document maintenance">
+            <AdditionalMetrics>
+                <dt>Due at snapshot time</dt>
+                <dd>@(DueScheduleCount?.ToString("N0", CultureInfo.CurrentCulture) ?? "Unavailable")</dd>
+                <dt>Oldest due age</dt>
+                <dd>
+                    <OperationsAge Timestamp="@OldestDueAtUtc" ObservedAt="@_observedAtUtc"
+                                   MissingText="@(DueScheduleCount == 0 ? "None" : "Unavailable")" />
+                </dd>
+            </AdditionalMetrics>
+        </OperationsMetricCard>
+        <OperationsMetricCard HeadingId="running-jobs" Title="Running jobs"
+                              Count="@_maintenance?.Schedules.Count(schedule => schedule.ActiveRun is not null)" ShowOldestAge="true"
+                              OldestAtUtc="@OldestActiveStartUtc" ObservedAtUtc="@_observedAtUtc"
+                              Description="Document maintenance jobs with an active execution."
+                              EmptyMessage="No active document maintenance runs."
+                              DetailsHref="@MaintenanceHref" DetailsLabel="View running job timelines" />
+        <OperationsMetricCard HeadingId="failed-jobs" Title="Failed jobs"
+                              Count="@LatestFailures?.Count()" ShowOldestAge="true"
+                              OldestAtUtc="@OldestFailedCompletionUtc" ObservedAtUtc="@_observedAtUtc"
+                              Description="Document maintenance jobs whose latest execution recorded a failure."
+                              EmptyMessage="No latest document maintenance runs failed."
+                              DetailsHref="@MaintenanceHref" DetailsLabel="View failed job timelines">
+            <AdditionalMetrics>
+                @if (UnrecordedLatestOutcomeCount is int count && count > 0)
+                {
+                    <dt>Latest outcomes unrecorded</dt>
+                    <dd>@count.ToString("N0", CultureInfo.CurrentCulture)</dd>
+                }
+            </AdditionalMetrics>
+        </OperationsMetricCard>
+        <OperationsMetricCard HeadingId="pending-outbox" Title="Pending outbox"
+                              Count="@_messaging?.AdminPendingOutboxCount" ShowOldestAge="true"
+                              OldestAtUtc="@_messaging?.AdminOldestPendingOutboxEnqueuedAt" ObservedAtUtc="@_messaging?.ObservedAtUtc"
+                              EmptyMessage="No Admin outbox messages are pending."
+                              DetailsHref="operations/messaging/outbox" DetailsLabel="Inspect pending outbox" />
+        <OperationsMetricCard HeadingId="catalog-retry-backlog" Title="Catalog delivery retries"
+                              Count="@_messaging?.CatalogRetryCount" ShowOldestAge="true"
+                              OldestAtUtc="@_messaging?.CatalogOldestRetryReceivedAt" ObservedAtUtc="@_messaging?.ObservedAtUtc"
+                              Description="@DueRetries" EmptyMessage="No scheduled Catalog delivery retries."
+                              DetailsHref="@CatalogDeliveryHref" DetailsLabel="Inspect Catalog deliveries" />
+        <OperationsMetricCard HeadingId="catalog-terminal-failures" Title="Catalog terminal failures"
+                              Count="@_messaging?.CatalogTerminalDeliveryFailureCount" ShowOldestAge="true"
+                              OldestAtUtc="@_messaging?.CatalogOldestTerminalFailureAt" ObservedAtUtc="@_messaging?.ObservedAtUtc"
+                              EmptyMessage="No Catalog terminal failures."
+                              DetailsHref="@CatalogDeliveryHref" DetailsLabel="Inspect Catalog deliveries" />
+        <OperationsMetricCard HeadingId="idempotency-duplicates" Title="Idempotency duplicates"
+                              Count="@_inbox?.DuplicateCount"
+                              Description="Completed duplicate deliveries retained by Catalog."
+                              EmptyMessage="No completed Catalog inbox duplicates."
+                              DetailsHref="operations/messaging/catalog-delivery?view=inbox#catalog-inbox-heading" DetailsLabel="Inspect Catalog inbox duplicates">
+            <AdditionalMetrics>
+                <dt>Latest completed duplicate age</dt>
+                <dd>
+                    <OperationsAge Timestamp="@_inbox?.LastObservedAt" ObservedAt="@_observedAtUtc"
+                                   MissingText="@(_inbox?.DuplicateCount == 0 ? "None" : "Unavailable")" />
+                </dd>
+            </AdditionalMetrics>
+        </OperationsMetricCard>
+        <OperationsMetricCard HeadingId="stuck-sagas" Title="Stuck sagas" ShowOldestAge="true"
+                              Count="@_galleryRetryHealth?.DuePlacementCount" OldestAtUtc="@_galleryRetryHealth?.OldestDueAt" ObservedAtUtc="@_observedAtUtc"
+                              Description="Pending Gallery placements with a due retry after repeated wake attempts."
+                              EmptyMessage="No Gallery placements have repeated retries due."
+                              DetailsHref="operations/gallery" DetailsLabel="Find a Gallery placement" />
+    </div>
+}
+
+@code {
+    private const string MaintenanceHref = "operations/document-maintenance";
+    private const string CatalogDeliveryHref = "operations/messaging/catalog-delivery";
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private DocumentMaintenanceHistoryDto? _maintenance;
+    private GetMessagingHealthDto? _messaging;
+    private GetCatalogInboxHealthDto? _inbox;
+    private GetCatalogGalleryRetryHealthDto? _galleryRetryHealth;
+    private DateTimeOffset _observedAtUtc;
+    private bool _loading = true;
+    private bool _maintenanceLoadFailed;
+    private bool _messagingLoadFailed;
+
+    private IEnumerable<DocumentMaintenanceScheduleDto>? DueSchedules =>
+        _maintenance?.Schedules.Where(static schedule => schedule.IsDue);
+
+    private int? DueScheduleCount => DueSchedules?.Count();
+
+    private DateTimeOffset? OldestDueAtUtc => DueSchedules?.Min(static schedule => schedule.NextDueAtUtc);
+
+    private DateTimeOffset? OldestActiveStartUtc => _maintenance?.Schedules.Min(schedule => schedule.ActiveRun?.StartedAtUtc);
+
+    private IEnumerable<DocumentMaintenanceExecutionDto>? LatestFailures => _maintenance?.Schedules
+        .Select(schedule => schedule.LatestRun)
+        .OfType<DocumentMaintenanceExecutionDto>()
+        .Where(run => run.Status is DocumentMaintenanceExecutionStatus.Failed or DocumentMaintenanceExecutionStatus.TerminalFailure);
+
+    private int? UnrecordedLatestOutcomeCount => _maintenance?.Schedules.Count(static schedule =>
+        schedule.ActiveRun is null && schedule.LatestRun?.Status == DocumentMaintenanceExecutionStatus.Unknown);
+
+    // Sort missing completion times first because an undated failure leaves the oldest age unknown.
+    private DateTimeOffset? OldestFailedCompletionUtc => LatestFailures?.OrderBy(run => run.FinishedAtUtc).FirstOrDefault()?.FinishedAtUtc;
+
+    private string? DueRetries => _messaging is { CatalogRetryCount: > 0 } messaging
+        ? $"{messaging.CatalogDueRetryCount.ToString("N0", CultureInfo.CurrentCulture)} due at snapshot time."
+        : null;
+
+    protected override Task OnInitializedAsync() => Load();
+
+    private Task Refresh() => _loading ? Task.CompletedTask : Load();
+
+    private async Task Load()
+    {
+        _loading = true;
+        _maintenanceLoadFailed = false;
+        _messagingLoadFailed = false;
+        var ct = _lifetime.Token;
+        var maintenanceRead = ReadAvailable(MaintenanceApi.Read, ct);
+        var messagingRead = ReadAvailable(MessagingApi.ReadMessagingHealth, ct);
+        var inboxRead = ReadAvailable(InboxApi.ReadHealth, ct);
+        var galleryRead = ReadAvailable(GalleryApi.GetRetryHealth, ct);
+        await Task.WhenAll(maintenanceRead, messagingRead, inboxRead, galleryRead);
+
+        ct.ThrowIfCancellationRequested();
+        _maintenance = await maintenanceRead;
+        _messaging = await messagingRead;
+        _inbox = await inboxRead;
+        _galleryRetryHealth = await galleryRead;
+        _observedAtUtc = Clock.GetUtcNow();
+        _maintenanceLoadFailed = _maintenance is null;
+        _messagingLoadFailed = _messaging is null;
+        _loading = false;
+    }
+
+    private static async Task<T?> ReadAvailable<T>(Func<CancellationToken, Task<HttpOutcome<T>>> read, CancellationToken ct) where T : class
+    {
+        try
+        {
+            var outcome = await read(ct);
+            return outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            return null;
+        }
+    }
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

@@ -23,6 +23,7 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Maintenance;
+using ViajantesTurismo.Admin.Application.Operations;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -31,6 +32,7 @@ using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
+using ViajantesTurismo.Admin.Infrastructure.Operations;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Resources;
 
@@ -108,6 +110,9 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
+        builder.Services.AddScoped<IMessagingHealthQuery, MessagingHealthQuery>();
+        builder.Services.AddScoped<ICatalogDeliveryQuery, CatalogDeliveryQuery>();
+        builder.Services.AddScoped<IOutboxDeliveryQuery, OutboxDeliveryQuery>();
         builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
         builder.Services.AddTourPersistence();
         builder.Services.TryAddScoped<ICustomerStore, CustomerStore>();
@@ -243,7 +248,8 @@ public static class InfrastructureDependencyInjection
         {
             builder.Services.AddScoped<DocumentMaintenanceDrain>();
             builder.Services.AddHostedService<DurableDocumentMaintenanceHostedService>();
-            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
+            builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>(
+                static options => options.StorePublishExceptionTypeOnly = true);
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
         }
 
@@ -267,6 +273,13 @@ public static class InfrastructureDependencyInjection
     private static void AddAdminReadDbContext<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
+        builder.Services.AddIntegrationEventTransportStorage<AdminReadDbContext>();
+        builder.Services.AddIntegrationEventOutboxStorage<AdminReadDbContext>();
+        builder.Services.ConfigureIntegrationEventStorage<AdminReadDbContext>(options =>
+        {
+            options.ExcludeOutboxFromMigrations = true;
+            options.ExcludeTransportFromMigrations = true;
+        });
         builder.AddNpgsqlDbContext<AdminReadDbContext>(
             ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureReadDatabaseOptions(builder, options));

@@ -13,6 +13,10 @@ internal static class CatalogWorkflowServiceCollectionExtensions
             .AddTokenExchangeHandler(ApiAudienceNames.Catalog, scope: ApiAudienceNames.Catalog);
         services.AddHttpClient<ICatalogGalleryEditorApiClient, CatalogGalleryEditorApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
             .AddTokenExchangeHandler(ApiAudienceNames.Catalog, scope: ApiAudienceNames.Catalog);
+        services.AddHttpClient<ICatalogGalleryOperationsApiClient, CatalogGalleryOperationsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
+            .AddTokenExchangeHandler(ApiAudienceNames.Catalog, scope: ApiAudienceNames.Catalog);
+        services.AddHttpClient<ICatalogInboxOperationsApiClient, CatalogInboxOperationsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
+            .AddTokenExchangeHandler(ApiAudienceNames.Catalog, scope: ApiAudienceNames.Catalog);
         services.AddHttpClient<IPublicContentApiClient, PublicContentApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
             .AddTokenExchangeHandler(ApiAudienceNames.Catalog, scope: ApiAudienceNames.Catalog);
     }

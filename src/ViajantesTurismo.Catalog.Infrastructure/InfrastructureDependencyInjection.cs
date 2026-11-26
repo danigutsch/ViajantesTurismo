@@ -8,6 +8,7 @@ using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Npgsql;
 using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application;
+using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Resources;
@@ -61,6 +62,7 @@ public static class InfrastructureDependencyInjection
         builder.AddCatalogPersistence();
         builder.Services.AddCatalogApplication();
         builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
+        builder.Services.AddScoped<ICatalogInboxOperationsQuery, CatalogInboxOperationsQuery>();
 
         var shouldAddOutboxRelay = addOutboxRelay
             ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
@@ -157,12 +159,13 @@ public static class InfrastructureDependencyInjection
     {
         builder.Services.AddIntegrationEventOutbox<CatalogDbContext>();
         builder.Services.UseDefaultIntegrationEventOutbox<CatalogDbContext>();
-        builder.Services.AddIntegrationEventInbox<CatalogDbContext>();
+        CatalogInboxDuplicateRecorder.Register(builder.Services);
         builder.Services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         if (addOutboxRelay)
         {
             AddCatalogOutboxRouting(builder.Services);
-            builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
+            builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>(
+                static options => options.StorePublishExceptionTypeOnly = true);
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
         }
 

@@ -28,15 +28,20 @@ public sealed class CatalogTourRetirementPostgreSqlTests(HostedTestFixture share
         Func<Task> firstAttempt = () => scenario.Retire(retirement, ct);
         await firstAttempt.ShouldThrow<DbUpdateException>();
         var (markersBeforeRetry, eventsBeforeRetry) = await scenario.ReadCompletion(adminTourId, ct);
+        var streamBeforeRetry = await scenario.ReadStream(adminTourId, ct);
         await scenario.RemoveOutboxFailure(ct);
         await scenario.Retire(retirement, ct);
         var (markersAfterRetry, eventsAfterRetry) = await scenario.ReadCompletion(adminTourId, ct);
+        var streamAfterRetry = await scenario.ReadStream(adminTourId, ct);
 
         // Assert
         markersBeforeRetry.ShouldBe(0);
         eventsBeforeRetry.ShouldBeEmpty();
+        var committedRetirement = streamBeforeRetry.ShouldHaveSingleItem();
+        committedRetirement.CausationEventId.ShouldBe(retirement.EventId);
         markersAfterRetry.ShouldBe(1);
         eventsAfterRetry.ShouldHaveSingleItem().ShouldBe(retirement.RetirementId.ToString("D"));
+        streamAfterRetry.ShouldHaveSingleItem().EventId.ShouldBe(committedRetirement.EventId);
     }
 
     [Fact]

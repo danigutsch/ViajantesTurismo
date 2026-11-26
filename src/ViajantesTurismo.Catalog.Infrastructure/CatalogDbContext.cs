@@ -55,7 +55,7 @@ public sealed class CatalogDbContext(
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
         modelBuilder.Entity<CatalogGalleryPlacementIntentEntity>(intent =>
         {
-            intent.ToTable("CatalogGalleryPlacementIntents");
+            intent.ToTable(CatalogGalleryPlacementIntentEntity.TableName);
             intent.HasKey(row => row.Id);
             intent.Property(row => row.Id).ValueGeneratedNever();
             intent.HasIndex(row => new { row.CatalogTourId, row.Sequence }).IsUnique();

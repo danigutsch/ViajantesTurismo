@@ -19,7 +19,7 @@ internal sealed class CatalogDbContextDesignTimeFactory : IDesignTimeDbContextFa
     {
         var services = new ServiceCollection();
         services.AddIntegrationEventOutbox<CatalogDbContext>();
-        services.AddIntegrationEventInbox<CatalogDbContext>();
+        CatalogInboxDuplicateRecorder.Register(services);
         services.AddIntegrationEventTransportStorage<CatalogDbContext>();
 
         using var serviceProvider = services.BuildServiceProvider();

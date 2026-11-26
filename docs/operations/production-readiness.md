@@ -3,11 +3,51 @@
 This runbook defines the current minimum production-readiness baseline for the Aspire-hosted
 application. It is intentionally platform-neutral until a target hosting platform is selected.
 
+## Management operations overview
+
+Administrators use **Operations** in Management Web to see read-only scheduling and delivery
+summaries. The banner shows the Management Web environment. The Admin summary endpoints return
+aggregate metadata with `Cache-Control: no-store`.
+
+| Card | Evidence |
+| --- | --- |
+| Scheduled jobs | Document maintenance schedules registered in PostgreSQL. The maintenance link opens execution timelines and counts-only batch evidence. |
+| Running jobs | Document maintenance schedules with an active lease. Oldest age starts at execution start. |
+| Failed jobs | Document maintenance schedules whose latest execution failed. Oldest age starts at failure completion. |
+| Catalog delivery retries | Catalog rows with a persisted future or due consume retry in Admin's delivery transport. Oldest age starts at transport receipt. The due count includes leased retries whose retry time is at or before the snapshot. |
+| Catalog terminal failures | Terminal rows for Catalog in that transport. Oldest age starts at the transition to terminal failure. |
+| Pending outbox | Unpublished Admin outbox messages, including scheduled retries. Oldest age starts at enqueue time. |
+| Idempotency duplicates | Catalog retains completed duplicate counts and the latest observation per event. |
+| Stuck sagas | Candidate counts are unavailable. The Gallery link opens the read-only placement viewer. |
+
+A measured zero has its own empty state. Counts missing their data source or affected by a
+failed request are shown as unavailable. **Refresh** reads fresh maintenance and messaging snapshots.
+The Catalog retry and terminal failure cards link to the same bounded, read-only delivery view
+for that consumer.
+
+The dashboard reads optional non-negative limits from Management Web's
+`Operations:Dashboard:MaximumCounts` configuration. The keys are `scheduled-jobs`, `running-jobs`,
+`failed-jobs`, `pending-outbox`, `catalog-retry-backlog`, `catalog-terminal-failures`,
+`idempotency-duplicates`, and `stuck-sagas`. The scheduled-jobs limit applies to the due count.
+The other limits apply to each card's displayed count. A measurement at or below its limit is
+within threshold. Missing measurements and unconfigured limits have separate statuses.
+Record each deployment's values and alert delivery in its runbook.
+
+**Inspect pending outbox** lists unpublished Admin outbox messages and their publishing attempts.
+Filter by exact event ID, event type, and enqueue date in UTC. The Pending outbox card shows
+the oldest pending age across the queue. The details page returns up to 25 rows at a time.
+It exposes event identifiers and attempt metadata. Message bodies, stored errors, and claim
+information stay in storage.
+
+On **Catalog deliveries**, choose **Inspect completed duplicates** to see retained Catalog inbox
+totals and each event's duplicate count and latest observation in UTC. Search by exact event ID,
+an inclusive **Observed since (UTC)** time, or both. Results show up to 25 events at a time.
+
 ## Document maintenance history
 
-Administrators and users with `OperationsScheduleController` can open **Document maintenance** in
-Management Web. The page shows the last 20 recorded batches for each retention job. Each row shows
-its UTC timestamp, outcome, removed count, and hold count. The Admin response uses no-store caching.
+Administrators and users with `OperationsScheduleController` can open document maintenance. The
+history shows the last 20 recorded batches for each retention job. Each row shows its UTC timestamp,
+outcome, removed count, and hold count. The Admin response uses no-store caching.
 
 Each job shows the current schedule state, next recurring due time, active execution, and paged
 execution history. A separate batch timeline shows the retention work completed during executions.

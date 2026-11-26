@@ -1,0 +1,70 @@
+@using ViajantesTurismo.Catalog.Contracts.Application
+
+<section aria-labelledby="@HeadingId">
+    <h2 id="@HeadingId">@Heading</h2>
+    @if (MarksOriginalAsTrigger)
+    {
+        <p>This wake triggered the committed transition.</p>
+    }
+    @if (Wake is { } wake)
+    {
+        <dl>
+            <dt>Delivery state</dt>
+            <dd>@(wake.PublishedAt.HasValue ? "Published" : PendingDeliveryState(wake.NextAttemptAt, ObservedAt))</dd>
+            <dt>Queued (UTC)</dt>
+            <dd>@FormatTime(wake.RecordedAt)</dd>
+            <dt>Delivered (UTC)</dt>
+            <dd>@FormatTime(wake.PublishedAt)</dd>
+            <dt>Failed attempts</dt>
+            <dd>@wake.FailedAttempts</dd>
+            <dt>Last attempt (UTC)</dt>
+            <dd>@FormatTime(wake.LastAttemptAt)</dd>
+            <dt>Next attempt (UTC)</dt>
+            <dd>@FormatTime(wake.NextAttemptAt)</dd>
+        </dl>
+    }
+    else
+    {
+        <p>No retained delivery metadata is available.</p>
+    }
+    @if (InboxEventId is { } eventId && eventId != Guid.Empty)
+    {
+        <p>
+            <a href="@($"operations/messaging/catalog-delivery?view=inbox&eventId={eventId:D}#catalog-inbox-heading")">
+                Inspect completed duplicates <span class="visually-hidden">for @Heading</span>
+            </a>
+        </p>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter]
+    public CatalogGalleryOriginalWakeDeliveryDto? Wake { get; set; }
+
+    /// <summary>Gets or sets the known Catalog inbox event to inspect for this wake.</summary>
+    [Parameter]
+    public Guid? InboxEventId { get; set; }
+
+    [Parameter, EditorRequired]
+    public DateTimeOffset ObservedAt { get; set; }
+
+    [Parameter]
+    public bool MarksOriginalAsTrigger { get; set; }
+
+    /// <summary>Describes the observed delivery timing of an unpublished Gallery wake.</summary>
+    internal static string PendingDeliveryState(DateTimeOffset? nextAttemptAt, DateTimeOffset observedAt) => nextAttemptAt switch
+    {
+        { } nextAttempt when nextAttempt <= observedAt => "Retry due",
+        not null => "Retry scheduled",
+        _ => "Pending",
+    };
+
+    private static string FormatTime(DateTimeOffset? value) =>
+        value?.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture) ?? "Unavailable";
+}

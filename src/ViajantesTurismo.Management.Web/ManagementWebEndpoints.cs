@@ -52,6 +52,7 @@ internal static class ManagementWebEndpoints
             .RequireAuthorization();
 
         app.MapDocumentArtifactProxy();
+        app.MapGalleryPlacementDiagnostics();
 
         app.MapStaticAssets()
             .AllowAnonymous();

@@ -7,6 +7,7 @@ using SharedKernel.EventSourcing.Npgsql;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
@@ -49,6 +50,11 @@ internal sealed class CatalogTourRetirementPostgreSqlScenario(ServiceProvider se
         await scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<AdminTourRetiredIntegrationEvent>>()
             .Handle(retirement, ct);
     }
+
+    /// <summary>Loads the committed Catalog stream for the matching Admin tour.</summary>
+    internal ValueTask<IReadOnlyCollection<EventEnvelope>> ReadStream(Guid adminTourId, CancellationToken ct) =>
+        services.GetRequiredService<IEventStore>().Load(
+            CatalogTourStreamIds.FromAdminTourId(adminTourId), afterRevision: null, ct);
 
     /// <summary>Reads the number of Catalog withdrawal rows and the stable completion event identifier.</summary>
     internal async Task<(int MarkerCount, string[] EventIds)> ReadCompletion(Guid adminTourId, CancellationToken ct)

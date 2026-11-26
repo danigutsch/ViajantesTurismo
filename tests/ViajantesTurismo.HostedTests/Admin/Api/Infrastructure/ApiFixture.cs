@@ -4,6 +4,7 @@ using Npgsql;
 using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Bookings;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Messaging;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
@@ -56,6 +57,14 @@ public class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admin.Testi
     {
         return shared.Databases.Create(ct);
     }
+
+    /// <summary>Seeds fixture-owned Catalog delivery rows into this Admin API's database.</summary>
+    internal Task<MessagingHealthTransportRows> SeedMessagingHealthTransportRows(CancellationToken ct) =>
+        MessagingHealthTransportRows.Seed(GetDatabaseConnectionString(), ct);
+
+    /// <summary>Seeds fixture-owned pending publication rows into this Admin API's database.</summary>
+    internal Task<OutboxDeliveryRows> SeedOutboxDeliveryRows(CancellationToken ct) =>
+        OutboxDeliveryRows.Seed(GetDatabaseConnectionString(), ct);
 
     /// <summary>Installs the document mutation concurrency scenario for <paramref name="documentId"/>.</summary>
     internal Task<DocumentMutationConcurrencyScenario> CreateDocumentMutationConcurrencyScenario(

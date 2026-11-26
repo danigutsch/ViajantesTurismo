@@ -15,6 +15,8 @@ internal static class CatalogAuthorization
     public const string CatalogPublish = "catalog.publish";
     /// <summary>Permission to use AI-assisted media features.</summary>
     public const string MediaAi = "media.ai";
+    /// <summary>Permission to read operational state.</summary>
+    public const string OperationsRead = "operations.read";
 
     /// <summary>Permissions granted to each provider role, keyed by role name.</summary>
     public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole
@@ -23,7 +25,7 @@ internal static class CatalogAuthorization
     } =
         new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
         {
-            ["Admin"] = [CatalogRead, CatalogWrite, CatalogPublish, MediaAi],
+            ["Admin"] = [CatalogRead, CatalogWrite, CatalogPublish, MediaAi, OperationsRead],
             ["Operator"] = [CatalogRead, CatalogWrite, MediaAi]
         };
 }

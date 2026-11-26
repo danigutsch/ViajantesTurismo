@@ -1,0 +1,90 @@
+@using Microsoft.Extensions.Options
+@inject IOptions<OperationsDashboardThresholds> Thresholds
+
+<div class="col">
+    <section class="card h-100" aria-labelledby="@HeadingId">
+        <div class="card-body">
+            <h2 class="h5" id="@HeadingId">@Title</h2>
+            <dl class="mb-2">
+                <dt>Count</dt>
+                <dd>@(Count?.ToString("N0", CultureInfo.CurrentCulture) ?? "Unavailable")</dd>
+                @if (ShowOldestAge)
+                {
+                    <dt>Oldest age</dt>
+                    <dd>
+                        <OperationsAge Timestamp="@OldestAtUtc" ObservedAt="@ObservedAtUtc"
+                                       MissingText="@(Count == 0 ? "None" : "Unavailable")" />
+                    </dd>
+                }
+                @AdditionalMetrics
+                <dt>Count threshold</dt>
+                <dd>@ThresholdStatus()</dd>
+            </dl>
+            @if (Description is not null)
+            {
+                <p class="mb-2">@Description</p>
+            }
+            @if (Count == 0 && EmptyMessage is not null)
+            {
+                <p class="mb-2">@EmptyMessage</p>
+            }
+            @if (DetailsHref is not null)
+            {
+                <a href="@DetailsHref">@DetailsLabel</a>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public long? Count { get; set; }
+
+    [Parameter]
+    public long? ThresholdCount { get; set; }
+
+    [Parameter]
+    public bool ShowOldestAge { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? OldestAtUtc { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? ObservedAtUtc { get; set; }
+
+    [Parameter]
+    public RenderFragment? AdditionalMetrics { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public string? EmptyMessage { get; set; }
+
+    [Parameter]
+    public string? DetailsHref { get; set; }
+
+    [Parameter]
+    public string? DetailsLabel { get; set; }
+
+    private string ThresholdStatus()
+    {
+        if ((ThresholdCount ?? Count) is not { } count)
+        {
+            return "Unavailable";
+        }
+
+        if (!Thresholds.Value.MaximumCounts.TryGetValue(HeadingId, out var maximum))
+        {
+            return "Not configured";
+        }
+
+        return count > maximum ? "Above threshold" : "Within threshold";
+    }
+}

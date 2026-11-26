@@ -51,7 +51,11 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>((provider, options) => options.UseNpgsql(connectionString));
         services.AddScoped<DbContext>(provider => provider.GetRequiredService<AdminWriteDbContext>());
-        services.AddDbContext<AdminReadDbContext>(options => options.UseNpgsql(connectionString).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+        // This fixture omits messaging mappings. Keep its model out of EF's shared provider cache.
+        services.AddDbContext<AdminReadDbContext>(options => options
+            .UseNpgsql(connectionString)
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .EnableServiceProviderCaching(false));
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AdminWriteDbContext>());
         services.AddScoped<IAfterRollback<DownloadPaymentInstructionsCommand, Result<FinalizedDocumentArtifact>>, PaymentInstructionDownloadRollbackAudit>();
         services.AddScoped<IPaymentAccountStore, PaymentAccountStore>();

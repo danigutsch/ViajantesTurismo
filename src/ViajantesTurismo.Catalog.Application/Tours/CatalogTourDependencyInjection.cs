@@ -27,7 +27,8 @@ internal static class CatalogTourDependencyInjection
                     sp.GetRequiredService<ICatalogTourSlugLock>()),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
-                sp.GetRequiredService<TimeProvider>()));
+                sp.GetRequiredService<TimeProvider>(),
+                sp.GetRequiredService<ICatalogInboxDuplicateRecorder>()));
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         services.AddIntegrationEventConsumer(
@@ -44,7 +45,8 @@ internal static class CatalogTourDependencyInjection
                 provider.GetRequiredService<CatalogGalleryPlacementQueuedHandler>(),
                 provider.GetRequiredService<IIdempotencyStore>(),
                 provider.GetRequiredService<IOptions<IntegrationEventOptions>>(),
-                provider.GetRequiredService<TimeProvider>()));
+                provider.GetRequiredService<TimeProvider>(),
+                provider.GetRequiredService<ICatalogInboxDuplicateRecorder>()));
         services.AddIntegrationEventConsumer(CatalogGalleryPlacementQueuedIntegrationEvent.EventType,
             CatalogIntegrationEventJsonContext.Default.CatalogGalleryPlacementQueuedIntegrationEvent);
     }

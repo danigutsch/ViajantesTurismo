@@ -32,17 +32,19 @@ internal sealed class EfCatalogGalleryPlacementIntentStore(
         var previous = await GetHighWatermark(catalogTourId, ct).ConfigureAwait(false);
         var id = Guid.CreateVersion7();
         var sequence = checked(previous + 1);
+        var acceptedAt = timeProvider.GetUtcNow();
         dbContext.Set<CatalogGalleryPlacementIntentEntity>().Add(new CatalogGalleryPlacementIntentEntity
         {
             Id = id,
             CatalogTourId = catalogTourId,
             Sequence = sequence,
+            AcceptedAtUtc = acceptedAt,
             PhotoIds = [.. photoIds],
             CoverId = coverId,
             CanPublish = canPublish,
             AppendsUploadedPhoto = appendsUploadedPhoto
         });
-        await outbox.Enqueue(new CatalogGalleryPlacementQueuedIntegrationEvent(id, timeProvider.GetUtcNow(), catalogTourId, sequence), ct)
+        await outbox.Enqueue(new CatalogGalleryPlacementQueuedIntegrationEvent(id, acceptedAt, catalogTourId, sequence), ct)
             .ConfigureAwait(false);
         return sequence;
     }

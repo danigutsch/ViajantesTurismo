@@ -1,0 +1,23 @@
+@if (Timestamp is { } timestamp && ObservedAt is { } observed && timestamp <= observed)
+{
+    <time datetime="@timestamp.ToString("O", CultureInfo.InvariantCulture)">@FormatAge(observed - timestamp)</time>
+}
+else
+{
+    @MissingText
+}
+
+@code {
+    [Parameter]
+    public DateTimeOffset? Timestamp { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? ObservedAt { get; set; }
+
+    [Parameter]
+    public string MissingText { get; set; } = "Unavailable";
+
+    private static string FormatAge(TimeSpan age) => age.Days > 0
+        ? $"{age.Days}d {age.Hours}h {age.Minutes}m"
+        : $"{age.Hours}h {age.Minutes}m";
+}

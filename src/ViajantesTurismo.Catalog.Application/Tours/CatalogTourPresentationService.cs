@@ -69,7 +69,7 @@ public sealed class CatalogTourPresentationService(
             return changed.ConvertError<CatalogTourDraftReadModel>();
         }
 
-        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId: null, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public sealed class CatalogTourPresentationService(
             return published.ConvertError<CatalogTourDraftReadModel>();
         }
 
-        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId: null, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public sealed class CatalogTourPresentationService(
         }
 
         aggregate.Unpublish();
-        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId: null, ct).ConfigureAwait(false);
     }
 
     /// <summary>Commits the authored ordering of photos linked to the tour and refreshes its projection.</summary>
@@ -167,7 +167,7 @@ public sealed class CatalogTourPresentationService(
             return Result.Ok(current);
         }
 
-        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId: null, ct).ConfigureAwait(false);
     }
 
     /// <summary>Queues an authorized gallery snapshot once the editor's observed placement has finished applying.</summary>
@@ -300,11 +300,15 @@ public sealed class CatalogTourPresentationService(
             return bootstrapped.ConvertError<CatalogTourDraftReadModel>();
         }
 
-        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+        return await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId: null, ct).ConfigureAwait(false);
     }
 
     /// <summary>Drains committed placement intents in tour order up to the supplied wake-up sequence.</summary>
-    public async ValueTask ApplyGalleryIntents(Guid catalogTourId, long throughSequence, CancellationToken ct)
+    public ValueTask ApplyGalleryIntents(Guid catalogTourId, long throughSequence, CancellationToken ct) =>
+        ApplyGalleryIntents(catalogTourId, throughSequence, causationEventId: null, ct);
+
+    /// <summary>Drains committed intents and records the wake responsible for the resulting appends when supplied.</summary>
+    internal async ValueTask ApplyGalleryIntents(Guid catalogTourId, long throughSequence, Guid? causationEventId, CancellationToken ct)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(throughSequence);
 
@@ -354,7 +358,7 @@ public sealed class CatalogTourPresentationService(
                 }
             }
 
-            var result = await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, ct).ConfigureAwait(false);
+            var result = await PersistAndProject(catalogTourId, aggregate, streamId, expectedVersion, causationEventId, ct).ConfigureAwait(false);
             current = result.Value;
         }
     }
@@ -424,6 +428,7 @@ public sealed class CatalogTourPresentationService(
         CatalogTour aggregate,
         StreamId streamId,
         long expectedVersion,
+        Guid? causationEventId,
         CancellationToken ct)
     {
         var pendingEvents = aggregate.GetUncommittedEvents();
@@ -433,11 +438,10 @@ public sealed class CatalogTourPresentationService(
             return current is null ? TourNotFound() : Result.Ok(current);
         }
 
-        var persistedEvents = await eventStore.Append(
-            streamId,
-            ExpectedStreamRevision.From(StreamRevision.From(expectedVersion)),
-            pendingEvents,
-            ct).ConfigureAwait(false);
+        var expectedRevision = ExpectedStreamRevision.From(StreamRevision.From(expectedVersion));
+        var persistedEvents = causationEventId is { } cause
+            ? await eventStore.Append(streamId, expectedRevision, pendingEvents, cause, ct).ConfigureAwait(false)
+            : await eventStore.Append(streamId, expectedRevision, pendingEvents, ct).ConfigureAwait(false);
         aggregate.ClearUncommittedEvents();
         try
         {

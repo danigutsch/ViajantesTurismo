@@ -128,6 +128,9 @@ public static class CatalogTelemetry
     /// </summary>
     public static string OutcomeCompleted => "completed";
 
+    /// <summary>Gets the outcome value for a failed optional duplicate observation.</summary>
+    public static string OutcomeDuplicateObservationFailed => "duplicate_observation_failed";
+
     /// <summary>
     /// Gets the error outcome value.
     /// </summary>

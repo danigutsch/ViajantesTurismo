@@ -14,11 +14,12 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
     IIntegrationEventHandler<TIntegrationEvent> inner,
     IIdempotencyStore idempotencyStore,
     IOptions<IntegrationEventOptions> options,
-    TimeProvider timeProvider) : IIntegrationEventHandler<TIntegrationEvent>
+    TimeProvider timeProvider,
+    ICatalogInboxDuplicateRecorder duplicateRecorder) : IIntegrationEventHandler<TIntegrationEvent>
     where TIntegrationEvent : IIntegrationEvent
 {
     private static readonly IdempotencyScope Scope = IdempotencyScope.From(
-        $"catalog.integration-event.{TIntegrationEvent.EventType}.v{TIntegrationEvent.EventVersion}");
+        $"{ICatalogInboxDuplicateRecorder.ScopePrefix}{TIntegrationEvent.EventType}.v{TIntegrationEvent.EventVersion}");
 
     /// <inheritdoc />
     public async ValueTask Handle(TIntegrationEvent integrationEvent, CancellationToken ct)
@@ -46,6 +47,16 @@ public sealed class IdempotentIntegrationHandler<TIntegrationEvent>(
                 {
                     throw new InvalidOperationException(
                         $"Integration event '{integrationEvent.EventId}' is already being processed.");
+                }
+
+                try
+                {
+                    await duplicateRecorder.Record(operation.Scope, integrationEvent.EventId, timeProvider.GetUtcNow(), ct);
+                }
+                catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+                {
+                    CatalogTelemetry.IdempotencyOperations.Add(
+                        1, new KeyValuePair<string, object?>(CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeDuplicateObservationFailed));
                 }
 
                 SetOutcome(activity, CatalogTelemetry.OutcomeSkipped);

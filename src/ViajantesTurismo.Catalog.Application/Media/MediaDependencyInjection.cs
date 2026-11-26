@@ -43,7 +43,8 @@ public static class MediaDependencyInjection
                 sp.GetRequiredService<MediaImageOriginalStoredIntegrationHandler>(),
                 sp.GetRequiredService<IIdempotencyStore>(),
                 sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
-                sp.GetRequiredService<TimeProvider>()));
+                sp.GetRequiredService<TimeProvider>(),
+                sp.GetRequiredService<ICatalogInboxDuplicateRecorder>()));
         JsonTypeInfo<MediaImageOriginalStoredIntegrationEvent> mediaImageOriginalStoredJsonTypeInfo =
             CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent;
         services.AddIntegrationEventConsumer(
