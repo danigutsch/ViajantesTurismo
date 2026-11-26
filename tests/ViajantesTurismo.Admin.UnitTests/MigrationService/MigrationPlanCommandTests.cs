@@ -160,6 +160,73 @@ public sealed class MigrationPlanCommandTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Plan_requires_the_exact_declared_expression_index_command(bool appendStatement)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        const string sql = """CREATE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree """
+            + """("key", ("payload" ->> 'IntentId'), "version") INCLUDE ("recorded_at") """
+            + """WHERE "event_type" IN ('catalog.changed.v1', 'catalog.rejected.v1');""";
+        var step = fixture.SetOnlineIndex(appendStatement ? sql + "\nSELECT true;" : sql);
+        step["onlineIndex"] = JsonNode.Parse("""
+            {
+                "schema": "migration_fixture", "table": "entries", "name": "entry_lookup",
+                "keys": [{ "column": "key" }, { "column": "payload", "jsonProperty": "IntentId" }, { "column": "version" }],
+                "include": ["recorded_at"],
+                "textFilter": { "column": "event_type", "values": ["catalog.changed.v1", "catalog.rejected.v1"] },
+                "unique": false
+            }
+            """);
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        if (appendStatement)
+        {
+            exitCode.ShouldBe(1);
+            output.ShouldBeEmpty();
+            error.ShouldContain("single concurrent index creation", StringComparison.Ordinal);
+        }
+        else
+        {
+            exitCode.ShouldBe(0);
+            error.ShouldBeEmpty();
+            output.ShouldContain("expand 1 online", StringComparison.Ordinal);
+        }
+    }
+
+    [Theory]
+    [InlineData("""{ "keys": [{ "column": "key" }], "columns": ["key"] }""")]
+    [InlineData("""{ "keys": [{ "column": "payload", "jsonProperty": "two words" }] }""")]
+    [InlineData("""{ "keys": [{ "column": "key" }, { "column": "key" }] }""")]
+    [InlineData("""{ "keys": [{ "column": "key" }], "include": ["key"] }""")]
+    [InlineData("""{ "keys": [{ "column": "key" }], "textFilter": { "column": "event_type", "values": [] } }""")]
+    [InlineData("""{ "keys": [{ "column": "key" }], "textFilter": { "column": "event_type", "values": ["two words"] } }""")]
+    public async Task Plan_rejects_invalid_typed_index_parts(string declaration)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        var step = fixture.SetOnlineIndex("""CREATE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree ("key");""");
+        var index = JsonNode.Parse(declaration).ShouldNotBeNull().AsObject();
+        index["schema"] = "migration_fixture";
+        index["table"] = "entries";
+        index["name"] = "entry_lookup";
+        index["unique"] = false;
+        step["onlineIndex"] = index;
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        output.ShouldBeEmpty();
+        error.ShouldContain("Invalid online index declaration", StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("missing", "Online execution requires a declared index")]
     [InlineData("atomic", "An online index declaration requires online transaction mode")]
     [InlineData("checkpoint", "Online execution requires a declared index")]

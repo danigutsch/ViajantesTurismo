@@ -8,13 +8,16 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Tours;
 /// <summary>EF Core mapping for the catalog tour read model.</summary>
 internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfiguration<CatalogTourReadModelEntity>
 {
+    /// <summary>The projected Catalog tour table.</summary>
+    internal const string TableName = "CatalogTourReadModels";
+
     /// <summary>The unique rule of the public tour slug index, reported when two tours would share a slug.</summary>
     internal const string SlugUniqueRule = "catalog.tour-slug";
 
     /// <summary>Maps the table, unique indexes, column limits and concurrency tokens.</summary>
     public void Configure(EntityTypeBuilder<CatalogTourReadModelEntity> entity)
     {
-        entity.ToTable("CatalogTourReadModels");
+        entity.ToTable(TableName);
         entity.HasKey(tour => tour.CatalogTourId);
         entity.Property(tour => tour.CatalogTourId).ValueGeneratedNever();
         entity.HasIndex(tour => tour.AdminTourId).IsUnique();

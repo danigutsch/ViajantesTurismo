@@ -1,0 +1,217 @@
+@page "/operations/messaging/outbox"
+@using SharedKernel.AspNetCore.Authentication.Bff
+@attribute [Authorize(Roles = "Admin")]
+@inject IMessagingHealthApiClient MessagingApi
+@inject TimeProvider Clock
+
+<PageTitle>Admin outbox</PageTitle>
+
+<h1 tabindex="-1" @ref="_heading">Admin outbox</h1>
+<p><a href="operations">Back to operations</a></p>
+
+<form class="d-flex flex-wrap align-items-end gap-3 mb-3" @onsubmit="Search" @onsubmit:preventDefault>
+    <div>
+        <label for="outbox-event-id" class="form-label">Event ID</label>
+        <input id="outbox-event-id" class="form-control" @bind="_eventId" />
+    </div>
+    <div>
+        <label for="outbox-event-type" class="form-label">Event type</label>
+        <input id="outbox-event-type" class="form-control" @bind="_eventType" />
+    </div>
+    <div>
+        <label for="outbox-recorded-since" class="form-label">Enqueued since (UTC)</label>
+        <input id="outbox-recorded-since" class="form-control" type="date" @bind="_recordedSince" />
+    </div>
+    <div class="form-check">
+        <input id="outbox-include-published" class="form-check-input" type="checkbox" @bind="_includePublished" />
+        <label for="outbox-include-published" class="form-check-label">Include retained published messages</label>
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@_loading">Search</button>
+</form>
+
+@if (_needsExactEventId)
+{
+    <p role="alert">Enter an exact event ID to include retained published messages.</p>
+}
+else if (_loading)
+{
+    <p role="status">@(_loadedFilters.IncludePublished ? "Looking up outbox publication…" : "Loading pending outbox messages…")</p>
+}
+else if (_page is null)
+{
+    <p role="alert">@(_loadedFilters.IncludePublished ? "Retained outbox lookup is unavailable." : "Admin outbox metadata is unavailable.")</p>
+}
+else if (_page.Rows.Count == 0)
+{
+    <p role="status">@(_loadedFilters.IncludePublished ? "No retained outbox message matches this search." : "No pending outbox messages match this search.")</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <caption class="visually-hidden">@(_loadedFilters.IncludePublished ? "Admin outbox publication evidence" : "Pending Admin outbox messages")</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Event ID</th>
+                    <th scope="col">Event type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Last failure</th>
+                    <th scope="col">Attempts</th>
+                    <th scope="col">Enqueued (UTC)</th>
+                    @if (_loadedFilters.IncludePublished)
+                    {
+                        <th scope="col">Published (UTC)</th>
+                    }
+                    <th scope="col">Last attempt (UTC)</th>
+                    <th scope="col">Next attempt (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _page.Rows)
+                {
+                    <tr @key="row.StorageId">
+                        <td><code>@row.EventId</code></td>
+                        <td>@row.EventType</td>
+                        <td>@GetStatus(row)</td>
+                        <td>@LastFailure(row)</td>
+                        <td>@row.Attempts</td>
+                        <td>@FormatTime(row.RecordedAt)</td>
+                        @if (_loadedFilters.IncludePublished)
+                        {
+                            <td>@FormatTime(row.PublishedAt)</td>
+                        }
+                        <td>@FormatTime(row.LastAttemptAt)</td>
+                        <td>@FormatTime(row.NextAttemptAt)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (!_needsExactEventId && !_loading && !_loadedFilters.IncludePublished && (_page is not null || _loadedFilters.AfterRecordedAt.HasValue))
+{
+    <nav aria-label="Admin outbox pages" class="d-flex gap-3">
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!_loadedFilters.AfterRecordedAt.HasValue)" @onclick="FirstPage">First page</button>
+        <button type="button" class="btn btn-outline-secondary" disabled="@(!HasNextPage)" @onclick="NextPage">Next page</button>
+    </nav>
+}
+
+@code {
+    private OutboxDeliveryFilters _loadedFilters = new();
+    private GetOutboxDeliveryPageDto? _page;
+    private string? _eventId;
+    private string? _eventType;
+    private DateOnly? _recordedSince;
+    private DateTimeOffset _loadedAt;
+    private ElementReference _heading;
+    private bool _loading = true;
+    private bool _includePublished;
+    private bool _needsExactEventId;
+    private int _loadVersion;
+    private (bool Retained, string? EventId)? _loadedRoute;
+
+    [SupplyParameterFromQuery(Name = "view")]
+    private string? RequestedView { get; set; }
+
+    [SupplyParameterFromQuery(Name = "eventId")]
+    private string? RequestedEventId { get; set; }
+
+    private bool HasNextPage => _page is { NextRecordedAt: not null, NextStorageId: not null };
+
+    protected override Task OnParametersSetAsync()
+    {
+        var retained = string.Equals(RequestedView, "retained", StringComparison.Ordinal);
+        var route = (Retained: retained, EventId: retained ? RequestedEventId : null);
+        if (_loadedRoute == route)
+        {
+            return Task.CompletedTask;
+        }
+
+        _loadedRoute = route;
+        _eventType = null;
+        _recordedSince = null;
+        _includePublished = retained;
+        _eventId = Guid.TryParseExact(route.EventId, "D", out var eventId) && eventId != Guid.Empty
+            ? eventId.ToString("D") : null;
+        if (retained && _eventId is null)
+        {
+            ++_loadVersion;
+            _page = null;
+            _loading = false;
+            _needsExactEventId = true;
+            return Task.CompletedTask;
+        }
+
+        return Search();
+    }
+
+    private Task Search()
+    {
+        var eventId = _eventId?.Trim();
+        if (_includePublished && string.IsNullOrWhiteSpace(eventId))
+        {
+            _needsExactEventId = true;
+            return Task.CompletedTask;
+        }
+
+        DateTimeOffset? since = _recordedSince is { } date
+            ? new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            : null;
+        return Load(new OutboxDeliveryFilters(eventId, _eventType?.Trim(), since) { IncludePublished = _includePublished });
+    }
+
+    private Task FirstPage() => Load(_loadedFilters with { AfterRecordedAt = null, AfterStorageId = null }, moveFocus: true);
+
+    private Task NextPage() => _page is { NextRecordedAt: { } recordedAt, NextStorageId: { } storageId }
+        ? Load(_loadedFilters with { AfterRecordedAt = recordedAt, AfterStorageId = storageId }, moveFocus: true)
+        : Task.CompletedTask;
+
+    private async Task Load(OutboxDeliveryFilters filters, bool moveFocus = false)
+    {
+        var version = ++_loadVersion;
+        _needsExactEventId = false;
+        _loading = true;
+        _loadedFilters = filters;
+        if (moveFocus)
+        {
+            await FocusHelper.TryFocus(_heading);
+        }
+
+        GetOutboxDeliveryPageDto? page;
+        try
+        {
+            var outcome = await MessagingApi.ReadOutboxDelivery(filters, CancellationToken.None);
+            page = outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+            if (filters.IncludePublished && page?.IncludesPublished != true)
+            {
+                page = null;
+            }
+        }
+        catch (UserTokenUnavailableException)
+        {
+            page = null;
+        }
+
+        if (version == _loadVersion)
+        {
+            _page = page;
+            _loadedAt = Clock.GetUtcNow();
+            _loading = false;
+        }
+    }
+
+    private string GetStatus(OutboxDeliveryRowDto row) => row switch
+    {
+        { PublishedAt: not null } => "Published",
+        { NextAttemptAt: { } nextAttempt } when nextAttempt <= _loadedAt => "Retry due",
+        { NextAttemptAt: not null } => "Retry scheduled",
+        _ => "Pending publication"
+    };
+
+    private static string LastFailure(OutboxDeliveryRowDto row) =>
+        row.Attempts > 0 ? "Publication failed" : "—";
+
+    private static string FormatTime(DateTimeOffset? time) =>
+        time?.UtcDateTime.ToString("u", CultureInfo.InvariantCulture) ?? "—";
+}

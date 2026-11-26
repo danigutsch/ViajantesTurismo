@@ -1,0 +1,241 @@
+@page "/operations/gallery"
+@attribute [Authorize(Roles = "Admin")]
+@using SharedKernel.AspNetCore.Authentication.Bff
+@using ViajantesTurismo.Catalog.Contracts.Application
+@using ViajantesTurismo.Catalog.Contracts.Http
+@inject ICatalogGalleryOperationsApiClient GalleryApi
+@inject TimeProvider Clock
+
+<PageTitle>Gallery placement status</PageTitle>
+
+<h1>Gallery placement status</h1>
+<p><a href="operations">Back to operations</a></p>
+
+<form class="d-flex flex-wrap align-items-end gap-3 mb-3" @onsubmit="Search" @onsubmit:preventDefault>
+    <div>
+        <label for="gallery-status-tour" class="form-label">Catalog tour ID</label>
+        <input id="gallery-status-tour" class="form-control" required @bind="_tourId" />
+    </div>
+    <div>
+        <label for="gallery-status-sequence" class="form-label">Placement sequence</label>
+        <input id="gallery-status-sequence" class="form-control" type="number" min="1" step="1" required @bind="_sequence" />
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@_loading">Find placement</button>
+</form>
+
+<form id="gallery-original-wake-lookup" class="d-flex flex-wrap align-items-end gap-3 mb-3"
+      @onsubmit="SearchByOriginalWake" @onsubmit:preventDefault>
+    <div>
+        <label for="gallery-original-wake-event" class="form-label">Original Gallery wake event ID</label>
+        <input id="gallery-original-wake-event" class="form-control" required @bind="_originalWakeEventId" />
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@_loading">Find placement by original wake</button>
+</form>
+
+@if (_loading)
+{
+    <p role="status">Loading placement status…</p>
+}
+else if (_error is not null)
+{
+    <p role="alert">@_error</p>
+}
+else if (_missingMessage is not null)
+{
+    <p role="status">@_missingMessage</p>
+}
+else if (_placement is { } placement)
+{
+    var closedByRetirement = placement.Status == CatalogGalleryPlacementStatusDto.ClosedByRetirement;
+    var triggeringWakeEventId = placement.TriggeringWakeEventId
+        ?? (placement.TriggeringWake is null ? null : placement.CausationEventId);
+    <p><a href="@GalleryPlacementDiagnosticsEndpoints.DownloadPath(placement.CatalogTourId, placement.Sequence)"
+          download data-enhance-nav="false">Download redacted diagnostics</a></p>
+    @if (placement.HasRepeatedWakeRetryDue(_loadedAt))
+    {
+        <p class="alert alert-warning" role="status">Repeated Gallery wake retry is due.</p>
+    }
+    <dl>
+        <dt>Catalog tour ID</dt>
+        <dd><code>@placement.CatalogTourId</code></dd>
+        <dt>Placement sequence</dt>
+        <dd>@placement.Sequence</dd>
+        <dt>Intent ID</dt>
+        <dd><code>@placement.IntentId</code></dd>
+        <dt>State</dt>
+        <dd>@StateLabel(placement.Status)</dd>
+        <dt>Terminal revision</dt>
+        <dd>@(placement.Revision?.ToString(CultureInfo.CurrentCulture) ?? "Unavailable")</dd>
+        @if (placement.TerminalEventId is { } terminalEventId)
+        {
+            <dt>Committed event ID</dt>
+            <dd><code>@terminalEventId</code></dd>
+            <dt>Causation event ID</dt>
+            @if (placement.CausationEventId is { } causationEventId)
+            {
+                <dd><code>@causationEventId</code></dd>
+            }
+            else
+            {
+                <dd>Unknown</dd>
+            }
+        }
+        <dt>Accepted (UTC)</dt>
+        <dd>@FormatTime(placement.AcceptedAt)</dd>
+        <dt>Terminal transition (UTC)</dt>
+        <dd>@FormatTime(placement.TerminalAt)</dd>
+        @if (closedByRetirement && placement.Retirement is { } retirement)
+        {
+            <dt>Retirement ID</dt>
+            <dd><code>@retirement.RetirementId</code></dd>
+            <dt>Catalog withdrawal recorded (UTC)</dt>
+            <dd>@FormatTime(retirement.WithdrawnAt)</dd>
+        }
+        @if (closedByRetirement && (placement.CausationEventId ?? placement.Retirement?.RetirementId) is { } retirementEventId)
+        {
+            <dt>Admin outbox</dt>
+            <dd><a href="@($"operations/messaging/outbox?view=retained&eventId={retirementEventId:D}")">Look up the retirement event</a></dd>
+        }
+        <dt>Updated age</dt>
+        <dd><OperationsAge Timestamp="@(placement.TerminalAt ?? placement.AcceptedAt)" ObservedAt="@_loadedAt" /></dd>
+    </dl>
+    <GalleryWakeDeliveryDetails HeadingId="gallery-original-wake-heading" Heading="Original wake delivery"
+                                Wake="placement.OriginalWake" ObservedAt="_loadedAt"
+                                InboxEventId="placement.IntentId"
+                                MarksOriginalAsTrigger="@(!closedByRetirement && placement.CausationEventId == placement.IntentId
+                                                          && triggeringWakeEventId == placement.IntentId)" />
+    @if (!closedByRetirement && placement.CausationEventId is { } cause && cause != placement.IntentId)
+    {
+        <GalleryWakeDeliveryDetails HeadingId="gallery-triggering-wake-heading" Heading="Triggering wake delivery"
+                                    Wake="placement.TriggeringWake" ObservedAt="_loadedAt"
+                                    InboxEventId="@(triggeringWakeEventId == cause ? cause : null)" />
+    }
+    @if (placement.RelatedPendingWakes is { Count: > 0 } pendingWakes)
+    {
+        <section aria-labelledby="gallery-pending-wakes-heading">
+            <h2 id="gallery-pending-wakes-heading">Related pending wakes</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Event ID</th>
+                            <th scope="col">Delivery state</th>
+                            <th scope="col">Queued (UTC)</th>
+                            <th scope="col">Failed attempts</th>
+                            <th scope="col">Last attempt (UTC)</th>
+                            <th scope="col">Next attempt (UTC)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pendingWake in pendingWakes)
+                        {
+                            <tr>
+                                <td><code>@pendingWake.EventId</code></td>
+                                <td>@GalleryWakeDeliveryDetails.PendingDeliveryState(pendingWake.NextAttemptAt, _loadedAt)</td>
+                                <td>@FormatTime(pendingWake.RecordedAt)</td>
+                                <td>@pendingWake.FailedAttempts</td>
+                                <td>@FormatTime(pendingWake.LastAttemptAt)</td>
+                                <td>@FormatTime(pendingWake.NextAttemptAt)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+}
+
+@code {
+    private const string FailureMessage = "Gallery placement status could not be loaded.";
+    private string? _tourId;
+    private string? _sequence;
+    private string? _originalWakeEventId;
+    private GetCatalogGalleryPlacementStatusDto? _placement;
+    private DateTimeOffset _loadedAt;
+    private string? _error;
+    private string? _missingMessage;
+    private bool _loading;
+    private int _lookupVersion;
+
+    private Task Search()
+    {
+        var version = BeginLookup();
+        if (!Guid.TryParse(_tourId, out var tourId) || tourId == Guid.Empty
+            || !long.TryParse(_sequence, NumberStyles.None, CultureInfo.InvariantCulture, out var sequence) || sequence <= 0)
+        {
+            _error = "Enter a Catalog tour ID and a positive placement sequence.";
+            return Task.CompletedTask;
+        }
+
+        return LoadPlacement(version, () => GalleryApi.Read(tourId, sequence, CancellationToken.None),
+            "No Gallery placement matches this tour and sequence.");
+    }
+
+    private Task SearchByOriginalWake()
+    {
+        var version = BeginLookup();
+        if (!Guid.TryParse(_originalWakeEventId, out var wakeId) || wakeId == Guid.Empty)
+        {
+            _error = "Enter a valid original Gallery wake event ID.";
+            return Task.CompletedTask;
+        }
+
+        return LoadPlacement(version, () => GalleryApi.ReadByOriginalWake(wakeId, CancellationToken.None),
+            "No Gallery placement matches this original wake event ID.");
+    }
+
+    private int BeginLookup()
+    {
+        _placement = null;
+        _error = null;
+        _missingMessage = null;
+        _loading = false;
+        return ++_lookupVersion;
+    }
+
+    private async Task LoadPlacement(
+        int version, Func<Task<HttpOutcome<GetCatalogGalleryPlacementStatusDto>>> lookup, string missingMessage)
+    {
+        _loading = true;
+        try
+        {
+            var outcome = await lookup();
+            if (version != _lookupVersion)
+            {
+                return;
+            }
+
+            _placement = outcome.Kind == HttpOutcomeKind.Succeeded ? outcome.Value : null;
+            _loadedAt = Clock.GetUtcNow();
+            _missingMessage = outcome.Kind == HttpOutcomeKind.NotFound ? missingMessage : null;
+            if (_placement is null && _missingMessage is null)
+            {
+                _error = FailureMessage;
+            }
+        }
+        catch (UserTokenUnavailableException)
+        {
+            if (version == _lookupVersion)
+            {
+                _error = FailureMessage;
+            }
+        }
+        finally
+        {
+            if (version == _lookupVersion)
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    private static string StateLabel(CatalogGalleryPlacementStatusDto status) => status switch
+    {
+        CatalogGalleryPlacementStatusDto.RejectedAfterPublication => "Rejected after publication",
+        CatalogGalleryPlacementStatusDto.ClosedByRetirement => "Closed by retirement",
+        _ => status.ToString(),
+    };
+
+    private static string FormatTime(DateTimeOffset? value) =>
+        value?.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture) ?? "Unavailable";
+}

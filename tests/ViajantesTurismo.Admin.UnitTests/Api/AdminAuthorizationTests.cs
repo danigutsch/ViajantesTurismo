@@ -37,6 +37,7 @@ public sealed class AdminAuthorizationTests
             AdminAuthorization.DocumentManage,
             AdminAuthorization.DocumentHold,
             AdminAuthorization.DocumentationRead,
+            AdminAuthorization.OperationsRead,
             AdminAuthorization.OperationsScheduleRead,
             AdminAuthorization.OperationsScheduleControl,
             AdminAuthorization.PaymentManage,

@@ -7,8 +7,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using SharedKernel.EventSourcing;
 using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.Idempotency;
 using SharedKernel.MalwareScanning.ClamAv;
 using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.ObjectStorage;
 using SharedKernel.Results;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
@@ -22,6 +24,8 @@ using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
@@ -54,6 +58,12 @@ internal sealed class CatalogGalleryIntentPostgreSqlScenario(
     /// <summary>Gets the service that authorizes and queues placements.</summary>
     public CatalogTourPresentationService Writer => scope.ServiceProvider.GetRequiredService<CatalogTourPresentationService>();
 
+    /// <summary>Gets the internal Gallery placement reader registered by Catalog.</summary>
+    internal CatalogGalleryProcessStatusReader ProcessStatus => scope.ServiceProvider.GetRequiredService<CatalogGalleryProcessStatusReader>();
+
+    /// <summary>Gets the operations query used by the authenticated Gallery lookup.</summary>
+    internal ICatalogGalleryOperationsQuery GalleryOperations => scope.ServiceProvider.GetRequiredService<ICatalogGalleryOperationsQuery>();
+
     /// <summary>Gets the runner that applies pending Catalog projections.</summary>
     public CatalogProjectionRunner Runner => scope.ServiceProvider.GetRequiredService<CatalogProjectionRunner>();
 
@@ -64,10 +74,40 @@ internal sealed class CatalogGalleryIntentPostgreSqlScenario(
     public IIntegrationEventHandler<CatalogGalleryPlacementQueuedIntegrationEvent> Handler =>
         scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<CatalogGalleryPlacementQueuedIntegrationEvent>>();
 
-    /// <summary>Seeds a draft Catalog tour, optionally with an explicitly authored empty album.</summary>
-    public async Task<CatalogTour> SeedDraft(bool authoredGallery, CancellationToken ct)
+    /// <summary>Delivers an Admin tour creation through the Catalog inbox decorator.</summary>
+    public ValueTask Deliver(AdminTourCreatedIntegrationEvent integrationEvent, CancellationToken ct) =>
+        scope.ServiceProvider.GetRequiredService<IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>>().Handle(integrationEvent, ct);
+
+    /// <summary>Acquires a Catalog inbox lease without delivering the wake.</summary>
+    public ValueTask<IdempotencyStartResult> StartInboxLease(IdempotencyOperation operation, CancellationToken ct)
     {
-        var tour = CatalogTour.CreateDraft(Guid.CreateVersion7(), "andes", "Andes", Guid.CreateVersion7());
+        var services = scope.ServiceProvider;
+        var inbox = services.GetRequiredKeyedService<IIdempotencyStore>(typeof(CatalogDbContext));
+        var clock = services.GetRequiredService<TimeProvider>();
+        var timeout = services.GetRequiredService<IOptions<IntegrationEventOptions>>().Value.IdempotencyLockDuration;
+        return inbox.TryStart(operation, clock.GetUtcNow(), timeout, ct);
+    }
+
+    /// <summary>Captures the inbox state, row version and hash of all stored values for one operation.</summary>
+    public Task<string> GetInboxRowVersion(IdempotencyOperation operation, CancellationToken ct) =>
+        Database.Database.SqlQuery<string>($"""
+            SELECT concat(inbox."State", '/', inbox.xmin::text, '/', encode(sha256(convert_to(to_jsonb(inbox)::text, 'UTF8')), 'hex')) AS "Value"
+            FROM messaging.idempotency_keys AS inbox
+            WHERE inbox."Scope" = {operation.Scope.Value} AND inbox."Key" = {operation.Key.Value}
+            """).SingleAsync(ct);
+
+    /// <summary>Reads durable duplicate observations for the exact Catalog delivery.</summary>
+    public Task<IntegrationEventInboxDuplicatePage> ReadInboxDuplicates(Guid eventId, CancellationToken ct) =>
+        IntegrationEventInboxDuplicates.ReadPage(Database, IntegrationEventConsumerNames.Catalog, eventId, limit: 1, cursor: null, ct);
+
+    /// <summary>Seeds a draft Catalog tour, optionally with an explicitly authored empty album.</summary>
+    public Task<CatalogTour> SeedDraft(bool authoredGallery, CancellationToken ct) =>
+        SeedDraft("andes", "Andes", authoredGallery, ct);
+
+    /// <summary>Seeds a distinct draft for a second tour in the same database.</summary>
+    public async Task<CatalogTour> SeedDraft(string identifier, string title, bool authoredGallery, CancellationToken ct)
+    {
+        var tour = CatalogTour.CreateDraft(Guid.CreateVersion7(), identifier, title, Guid.CreateVersion7());
         var stream = CatalogTourStreamIds.FromAdminTourId(tour.AdminTourId);
         await Events.Append(stream, ExpectedStreamRevision.NoStream, tour.GetUncommittedEvents(), ct);
         await Runner.Project(ct);
@@ -78,6 +118,21 @@ internal sealed class CatalogGalleryIntentPostgreSqlScenario(
         }
 
         return tour;
+    }
+
+    /// <summary>Reads the actual keyed Catalog inbox in this test scope.</summary>
+    public ValueTask<IdempotencyEntry?> ReadInbox(IdempotencyOperation operation, CancellationToken ct) =>
+        scope.ServiceProvider.GetRequiredKeyedService<IIdempotencyStore>(typeof(CatalogDbContext)).Get(operation, ct);
+
+    /// <summary>Queues one real photo placement and returns its durable journal identity.</summary>
+    public async Task<(Guid IntentId, long Sequence)> QueuePhoto(Guid tourId, CancellationToken ct)
+    {
+        var filename = $"{tourId:N}.jpg";
+        var photo = PublicMediaImageTestFactory.CreateReadyImage(tourId, filename, filename, $"sha256:{tourId:N}", "Fixture", 0, true);
+        await Images.Upsert(photo, ct);
+        var sequence = (await Writer.QueueGallery(tourId, [photo.Id], photo.Id, 1, 0, canPublish: false, ct)).Value;
+        var intent = await Intents.GetIntent(tourId, sequence, ct);
+        return (intent.ShouldNotBeNull().Id, sequence);
     }
 
     /// <summary>Seeds the stream and projection of a tour ready to publish.</summary>
@@ -124,11 +179,13 @@ internal sealed class CatalogGalleryIntentPostgreSqlScenario(
     }
 
     /// <summary>Advances the clock past an interrupted wake's inbox lease.</summary>
-    public void AdvanceBeyondInboxLease()
+    public DateTimeOffset AdvanceBeyondInboxLease()
     {
         var clock = (FakeTimeProvider)scope.ServiceProvider.GetRequiredService<TimeProvider>();
         var timeout = scope.ServiceProvider.GetRequiredService<IOptions<IntegrationEventOptions>>().Value.IdempotencyLockDuration;
-        clock.CurrentInstant += timeout + TimeSpan.FromSeconds(1);
+        var instant = clock.CurrentInstant + timeout + TimeSpan.FromSeconds(1);
+        clock.CurrentInstant = instant.AddTicks(-(instant.UtcTicks % TimeSpan.TicksPerMicrosecond));
+        return clock.CurrentInstant;
     }
 
     /// <summary>Creates an isolated scenario with the Catalog migrations and event-store schema applied.</summary>

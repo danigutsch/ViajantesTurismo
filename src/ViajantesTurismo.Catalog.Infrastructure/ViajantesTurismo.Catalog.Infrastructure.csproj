@@ -10,6 +10,7 @@
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Catalog.UnitTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.MigrationService" />
     </ItemGroup>
 
     <ItemGroup>

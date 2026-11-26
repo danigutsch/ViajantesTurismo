@@ -13,6 +13,6 @@ internal sealed class CatalogGalleryPlacementQueuedHandler(
     {
         ArgumentNullException.ThrowIfNull(notification);
 
-        return authoring.ApplyGalleryIntents(notification.CatalogTourId, notification.Sequence, ct);
+        return authoring.ApplyGalleryIntents(notification.CatalogTourId, notification.Sequence, notification.EventId, ct);
     }
 }

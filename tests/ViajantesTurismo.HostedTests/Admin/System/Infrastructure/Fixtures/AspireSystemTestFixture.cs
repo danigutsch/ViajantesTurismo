@@ -29,6 +29,14 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
     /// <summary>Gets the identifier of the conformance user in the system stack realm.</summary>
     internal string ConformanceUserId => shared.ConformanceUserId("system");
 
+    /// <summary>Starts the dedicated browser stack for Catalog inbox inspection.</summary>
+    internal Task<AspireTestApplication> GetCatalogInboxBrowserApplication(CancellationToken ct) =>
+        shared.GetApplication(HostedProfile.System, HostedTestFixture.CatalogInboxBrowserStack, ct);
+
+    /// <summary>Starts the dedicated browser stack for Gallery retry health.</summary>
+    internal Task<AspireTestApplication> GetCatalogGalleryDashboardBrowserApplication(CancellationToken ct) =>
+        shared.GetApplication(HostedProfile.System, HostedTestFixture.CatalogGalleryDashboardStack, ct);
+
     /// <inheritdoc />
     public Task<HttpClient> CreateApiClient(CancellationToken ct) =>
         CreateAuthenticatedResourceClient(ResourceNames.Api, ApiAudienceNames.Admin, ct);

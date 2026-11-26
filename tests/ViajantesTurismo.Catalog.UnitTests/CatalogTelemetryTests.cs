@@ -28,7 +28,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -60,7 +60,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(started: false),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -159,7 +159,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new ThrowingEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -196,7 +196,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new UnexpectedCancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -239,7 +239,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new UnexpectedCancelledIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -411,7 +411,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CancelledEventStore(), new TestCatalogTourSlugLock()),
             new CapturingIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -438,6 +438,38 @@ public sealed class CatalogTelemetryTests
     }
 
     [Fact]
+    public async Task Completed_duplicate_observation_propagates_caller_cancellation_without_error_telemetry()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
+        var store = new CapturingIdempotencyStore(started: false);
+        var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
+            new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
+            store, Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
+        var integrationEvent = new AdminTourCreatedIntegrationEvent(
+            Guid.CreateVersion7(), TimeProvider.System.GetUtcNow(), Guid.CreateVersion7(), "andes-2026", "Andes 2026");
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        // Act
+        Func<Task> handle = async () => await handler.Handle(integrationEvent, cancellation.Token);
+        var stopped = await handle.ShouldThrow<OperationCanceledException>();
+
+        // Assert
+        stopped.CancellationToken.ShouldBe(cancellation.Token);
+        store.StartedAt.ShouldNotBeNull();
+        store.CompletedAt.ShouldBeNull();
+        var activity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityIntegrationEventHandle);
+        activity.Status.ShouldBe(ActivityStatusCode.Unset);
+        measurements.ShouldNotContain(CatalogTelemetry.MetricIdempotencyOperation, StringComparer.Ordinal);
+        measurements.ShouldNotContain(CatalogTelemetry.MetricIntegrationEvent, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public async Task Idempotency_cancellation_does_not_emit_error_telemetry()
     {
         // Arrange
@@ -449,7 +481,7 @@ public sealed class CatalogTelemetryTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             new CancelledIdempotencyStore(),
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),

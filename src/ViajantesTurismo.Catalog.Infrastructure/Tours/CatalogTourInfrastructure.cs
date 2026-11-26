@@ -20,6 +20,8 @@ internal static class CatalogTourInfrastructure
         builder.Services.TryAddScoped<EfCatalogGalleryPlacementIntentStore>();
         builder.Services.TryAddScoped<ICatalogGalleryPlacementIntentStore>(
             services => services.GetRequiredService<EfCatalogGalleryPlacementIntentStore>());
+        builder.Services.TryAddScoped<CatalogGalleryProcessStatusReader>();
+        builder.Services.TryAddScoped<ICatalogGalleryOperationsQuery, CatalogGalleryOperationsQuery>();
         builder.Services.TryAddScoped<ICatalogGalleryReadStore, EfCatalogGalleryReadStore>();
         builder.Services.TryAddScoped<ICatalogGalleryPhotoOptionsQuery, EfCatalogGalleryPhotoOptionsQuery>();
         builder.Services.TryAddScoped<ICatalogTourRetirementStore, EfCatalogTourRetirementStore>();

@@ -32,6 +32,8 @@ internal static class CatalogApiSecurityExtensions
         .AddPolicy(CatalogAuthorization.CatalogWrite, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.CatalogWrite))
         .AddPolicy(CatalogAuthorization.CatalogPublish, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.CatalogPublish))
         .AddPolicy(CatalogAuthorization.MediaAi, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.MediaAi))
+        .AddPolicy(CatalogAuthorization.OperationsRead, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme)
+            .RequirePermission(CatalogAuthorization.OperationsRead))
         .AddBrandingPolicies()
         .SetDefaultPolicy(new AuthorizationPolicyBuilder(CatalogAuthorization.BearerScheme).RequireAuthenticatedUser().Build())
         .SetFallbackPolicy(new AuthorizationPolicyBuilder(CatalogAuthorization.BearerScheme).RequireAuthenticatedUser().Build());

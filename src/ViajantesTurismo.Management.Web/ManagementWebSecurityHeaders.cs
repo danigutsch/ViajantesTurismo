@@ -1,4 +1,5 @@
 using SharedKernel.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Management.Web;
 
@@ -17,13 +18,25 @@ internal static class ManagementWebSecurityHeaders
 
     /// <summary>
     /// Adds the security headers middleware with a sandbox policy for document artifacts and the Management Web
-    /// content security policy for other requests. Inline scripts and styles, and the
+    /// content security policy for other requests. Operations responses use no-store.
+    /// Inline scripts and styles, and the
     /// third-party stylesheet, need the response's nonce
     /// (<see cref="ICspNonce" />, registered with <see cref="CspNonceServiceCollectionExtensions.AddCspNonce" />).
     /// </summary>
     public static IApplicationBuilder UseManagementWebSecurityHeaders(this IApplicationBuilder app)
     {
         return app
+            .UseWhen(
+                static context => context.Request.Path.StartsWithSegments("/operations", StringComparison.OrdinalIgnoreCase),
+                static branch => branch.Use(static (context, next) =>
+                {
+                    context.Response.OnStarting(static state =>
+                    {
+                        HttpCacheHeaders.SetNoStore((HttpContext)state);
+                        return Task.CompletedTask;
+                    }, context);
+                    return next(context);
+                }))
             .UseWhen(IsDocumentArtifactDownload, branch => branch.UseSecurityHeaders(DocumentArtifactDelivery.ContentSecurityPolicy))
             .UseWhen(context => !IsDocumentArtifactDownload(context), branch => branch.UseSecurityHeaders(ContentSecurityPolicy));
     }

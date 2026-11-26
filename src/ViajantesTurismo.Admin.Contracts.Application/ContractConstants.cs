@@ -44,6 +44,18 @@ public static class ContractConstants
     /// <summary>Gets the upper limit for a requested booking financial window.</summary>
     public const int MaxBookingFinancialPageSize = 100;
 
+    /// <summary>Gets the default size of a Catalog delivery metadata page.</summary>
+    public const int DefaultCatalogDeliveryPageSize = 25;
+
+    /// <summary>Gets the maximum size of a Catalog delivery metadata page.</summary>
+    public const int MaxCatalogDeliveryPageSize = 100;
+
+    /// <summary>Gets the default size of an Admin outbox publication metadata page.</summary>
+    public const int DefaultOutboxDeliveryPageSize = 25;
+
+    /// <summary>Gets the maximum size of an Admin outbox publication metadata page.</summary>
+    public const int MaxOutboxDeliveryPageSize = 100;
+
     /// <summary>Gets the default size of a document maintenance timeline page.</summary>
     public const int DefaultDocumentMaintenancePageSize = 20;
 

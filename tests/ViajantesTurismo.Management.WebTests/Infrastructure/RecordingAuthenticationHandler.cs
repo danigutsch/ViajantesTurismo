@@ -26,6 +26,11 @@ internal sealed class RecordingAuthenticationHandler(
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var role = Request.Headers["X-Test-Role"].FirstOrDefault() ?? "Admin";
+        if (string.Equals(role, "anonymous", StringComparison.Ordinal))
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
         var identity = new ClaimsIdentity(
             [new Claim(ClaimTypes.Name, "test-user"), new Claim(ClaimTypes.Role, role)],
             Scheme.Name);

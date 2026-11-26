@@ -52,6 +52,7 @@ builder.Services.AddApiSecurity(
     .AddPolicy(AdminAuthorization.DocumentManage, policy => policy.RequirePermission(AdminAuthorization.DocumentManage))
     .AddPolicy(AdminAuthorization.DocumentHold, policy => policy.RequirePermission(AdminAuthorization.DocumentHold))
     .AddPolicy(AdminAuthorization.DocumentationRead, policy => policy.RequirePermission(AdminAuthorization.DocumentationRead))
+    .AddPolicy(AdminAuthorization.OperationsRead, policy => policy.RequirePermission(AdminAuthorization.OperationsRead))
     .AddPolicy(AdminAuthorization.OperationsScheduleRead, policy => policy.RequirePermission(AdminAuthorization.OperationsScheduleRead))
     .AddPolicy(AdminAuthorization.OperationsScheduleControl, policy => policy.RequirePermission(AdminAuthorization.OperationsScheduleControl))
     .AddPolicy(AdminAuthorization.PaymentManage, policy => policy.RequirePermission(AdminAuthorization.PaymentManage))
@@ -98,6 +99,7 @@ app.MapCustomerEndpoints();
 app.MapBookingEndpoints();
 app.MapDocumentEndpoints();
 app.MapDocumentMaintenanceEndpoints();
+app.MapMessagingHealthEndpoints();
 app.MapDocumentHoldEndpoints();
 app.MapPaymentAccountEndpoints();
 app.MapBookingFinancialEndpoints();

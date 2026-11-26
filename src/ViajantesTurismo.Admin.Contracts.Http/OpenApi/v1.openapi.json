@@ -5845,6 +5845,222 @@
         ]
       }
     },
+    "/api/v1/operations/messaging": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets messaging health.",
+        "description": "Reads retry and terminal aggregates for Admin-to-Catalog delivery.",
+        "operationId": "GetMessagingHealth",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMessagingHealthDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/messaging/catalog-delivery": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets Catalog delivery metadata.",
+        "description": "Reads a bounded metadata page for unfinished Admin-to-Catalog deliveries.",
+        "operationId": "GetCatalogDelivery",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordedSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "afterRecordedAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "afterStorageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCatalogDeliveryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/messaging/outbox": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets Admin outbox metadata.",
+        "description": "Reads bounded pending publication metadata, or retained publication metadata by exact event ID.",
+        "operationId": "GetOutboxDelivery",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recordedSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "afterRecordedAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "afterStorageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "includePublished",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOutboxDeliveryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/payment-accounts": {
       "get": {
         "tags": [
@@ -6956,6 +7172,64 @@
       },
       "BrazilianAccountTypeDto": {
         "type": "integer"
+      },
+      "CatalogDeliveryRowDto": {
+        "required": [
+          "storageId",
+          "eventId",
+          "eventType",
+          "recordedAt",
+          "attempts",
+          "lastAttemptAt",
+          "nextAttemptAt",
+          "terminalAt"
+        ],
+        "type": "object",
+        "properties": {
+          "storageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attempts": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "lastAttemptAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextAttemptAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "terminalAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
       },
       "ContactInfoDto": {
         "required": [
@@ -8539,6 +8813,36 @@
           }
         }
       },
+      "GetCatalogDeliveryPageDto": {
+        "required": [
+          "rows",
+          "nextRecordedAt",
+          "nextStorageId"
+        ],
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogDeliveryRowDto"
+            }
+          },
+          "nextRecordedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextStorageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "GetCustomerDto": {
         "required": [
           "id",
@@ -9136,6 +9440,113 @@
           },
           "changesRequested": {
             "type": "boolean"
+          }
+        }
+      },
+      "GetMessagingHealthDto": {
+        "required": [
+          "observedAtUtc",
+          "catalogTerminalDeliveryFailureCount",
+          "catalogOldestTerminalFailureAt",
+          "catalogRetryCount",
+          "catalogOldestRetryReceivedAt",
+          "catalogDueRetryCount"
+        ],
+        "type": "object",
+        "properties": {
+          "observedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "adminPendingOutboxCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "adminOldestPendingOutboxEnqueuedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "catalogTerminalDeliveryFailureCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "catalogOldestTerminalFailureAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "catalogRetryCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "catalogOldestRetryReceivedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "catalogDueRetryCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "GetOutboxDeliveryPageDto": {
+        "required": [
+          "rows",
+          "nextRecordedAt",
+          "nextStorageId"
+        ],
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutboxDeliveryRowDto"
+            }
+          },
+          "nextRecordedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextStorageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "includesPublished": {
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -10422,6 +10833,63 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "OutboxDeliveryRowDto": {
+        "required": [
+          "storageId",
+          "eventId",
+          "eventType",
+          "recordedAt",
+          "attempts",
+          "lastAttemptAt",
+          "nextAttemptAt"
+        ],
+        "type": "object",
+        "properties": {
+          "storageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attempts": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "lastAttemptAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextAttemptAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },

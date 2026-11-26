@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -103,5 +106,62 @@ public sealed class ManagementWebSecurityHeadersTests
         policy.ShouldContain($"style-src 'self' 'nonce-{nonce}';", StringComparison.Ordinal);
         policy.ShouldNotContain("unsafe-inline", StringComparison.Ordinal);
         secondPolicy.ShouldNotBe(policy);
+    }
+
+    [Theory]
+    [InlineData("/operations/gallery", "Admin", HttpStatusCode.OK)]
+    [InlineData("/operations/gallery", "Operator", HttpStatusCode.Forbidden)]
+    [InlineData("/operations/gallery", "anonymous", HttpStatusCode.Unauthorized)]
+    [InlineData("/operations/messaging/catalog-delivery", "Admin", HttpStatusCode.OK)]
+    [InlineData("/operations/messaging/catalog-delivery", "Operator", HttpStatusCode.Forbidden)]
+    [InlineData("/operations/messaging/catalog-delivery", "anonymous", HttpStatusCode.Unauthorized)]
+    [InlineData("/operations", "Admin", HttpStatusCode.OK)]
+    [InlineData("/operations", "Operator", HttpStatusCode.Forbidden)]
+    [InlineData("/operations", "anonymous", HttpStatusCode.Unauthorized)]
+    [InlineData("/operations/messaging/outbox", "Admin", HttpStatusCode.OK)]
+    [InlineData("/operations/document-maintenance", "anonymous", HttpStatusCode.Unauthorized)]
+    [InlineData("/operations/document-maintenance/drafts", "Admin", HttpStatusCode.OK)]
+    [InlineData("/operations/document-maintenance/drafts", "Operator", HttpStatusCode.Forbidden)]
+    [InlineData("/operations/document-maintenance/drafts", "anonymous", HttpStatusCode.Unauthorized)]
+    public async Task Operations_views_use_no_store_for_admin_challenge_and_forbid(string path, string role, HttpStatusCode status)
+    {
+        // Arrange
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webBuilder => webBuilder.UseTestServer()
+                .ConfigureServices(static services =>
+                {
+                    services.AddTestRequestBindingDefaults().AddCspNonce();
+                    services.AddRouting();
+                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                        .AddScheme<AuthenticationSchemeOptions, RecordingAuthenticationHandler>(CookieAuthenticationDefaults.AuthenticationScheme, null);
+                    services.AddAuthorization();
+                })
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseManagementWebSecurityHeaders();
+                    app.UseAuthentication();
+                    app.UseAuthorization();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet(path, () => Results.Ok())
+                            .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
+                        endpoints.MapGet("/operations-example", () => Results.Ok()).AllowAnonymous();
+                    });
+                }))
+            .StartAsync(ct);
+        using var client = host.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", role);
+
+        // Act
+        using var viewer = await client.GetAsync(new Uri(path, UriKind.Relative), ct);
+        using var outside = await client.GetAsync(new Uri("/operations-example", UriKind.Relative), ct);
+        var outsideIsNoStore = outside.Headers.CacheControl?.NoStore == true;
+
+        // Assert
+        viewer.StatusCode.ShouldBe(status);
+        viewer.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+        outsideIsNoStore.ShouldBeFalse();
     }
 }

@@ -5,6 +5,7 @@ using SharedKernel.Messaging;
 using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application;
+using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
@@ -24,6 +25,7 @@ internal sealed class CatalogIntegrationEventScenario : IAsyncDisposable
         services.AddLogging();
         services.AddSingleton<IEventStore>(eventStore);
         services.AddSingleton<IIdempotencyStore>(new CapturingIdempotencyStore());
+        services.AddSingleton<ICatalogInboxDuplicateRecorder>(NoOpCatalogInboxDuplicateRecorder.Instance);
         services.AddSingleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock());
         services.AddCatalogApplication();
         provider = services.BuildServiceProvider();

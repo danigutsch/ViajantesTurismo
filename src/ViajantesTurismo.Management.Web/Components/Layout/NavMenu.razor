@@ -62,14 +62,22 @@
                     <span class="bi bi-lock" aria-hidden="true"></span> Document holds
                 </NavLink>
             </div>
-        </AuthorizeView>
-
-        <AuthorizeView Roles="@DocumentMaintenanceAccess.ReadRoles">
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="operations/document-maintenance" Match="NavLinkMatch.Prefix">
-                    <span class="bi bi-clock-history" aria-hidden="true"></span> Document maintenance
+                <NavLink class="nav-link" href="operations" Match="NavLinkMatch.Prefix">
+                    <span class="bi bi-clock-history" aria-hidden="true"></span> Operations
                 </NavLink>
             </div>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="@DocumentMaintenanceAccess.ControlRole" Context="scheduleController">
+            @if (!scheduleController.User.IsInRole("Admin"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="operations/document-maintenance" Match="NavLinkMatch.Prefix">
+                        <span class="bi bi-clock-history" aria-hidden="true"></span> Document maintenance
+                    </NavLink>
+                </div>
+            }
         </AuthorizeView>
 
         <div class="nav-item px-3">

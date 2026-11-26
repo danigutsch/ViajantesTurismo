@@ -63,6 +63,11 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
+| `GET` | `/api/v1/catalog/operations/gallery/original-wakes/{eventId:guid}/placement` | GetGalleryPlacementByOriginalWake | management API | required | `ViajantesTurismo.Catalog.Api/Gallery/GalleryOperationsEndpoints.cs` |
+| `GET` | `/api/v1/catalog/operations/gallery/retry-health` | GetCatalogGalleryRetryHealth | management API | required | `ViajantesTurismo.Catalog.Api/Gallery/GalleryOperationsEndpoints.cs` |
+| `GET` | `/api/v1/catalog/operations/gallery/{catalogTourId:guid}/placements/{sequence:long}` | GetGalleryPlacementStatus | management API | required | `ViajantesTurismo.Catalog.Api/Gallery/GalleryOperationsEndpoints.cs` |
+| `GET` | `/api/v1/catalog/operations/messaging/inbox` | GetCatalogInboxHealth | management API | required | `ViajantesTurismo.Catalog.Api/Operations/CatalogInboxOperationsEndpoints.cs` |
+| `GET` | `/api/v1/catalog/operations/messaging/inbox/duplicates` | GetCatalogInboxDuplicates | management API | required | `ViajantesTurismo.Catalog.Api/Operations/CatalogInboxOperationsEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content` | ListPublicContentForManagement | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content-overview` | GetPublicContentOverviewPage | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
@@ -120,6 +125,9 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/operations/document-maintenance/{job}` | GetDocumentMaintenanceTimeline | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
 | `GET` | `/api/v1/operations/document-maintenance/{job}/executions` | GetDocumentMaintenanceExecutions | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
 | `POST` | `/api/v1/operations/document-maintenance/{job}/{action}` | ControlDocumentMaintenance | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
+| `GET` | `/api/v1/operations/messaging` | GetMessagingHealth | management API | required | `ViajantesTurismo.Admin.Api/Operations/MessagingHealthEndpoints.cs` |
+| `GET` | `/api/v1/operations/messaging/catalog-delivery` | GetCatalogDelivery | management API | required | `ViajantesTurismo.Admin.Api/Operations/MessagingHealthEndpoints.cs` |
+| `GET` | `/api/v1/operations/messaging/outbox` | GetOutboxDelivery | management API | required | `ViajantesTurismo.Admin.Api/Operations/MessagingHealthEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts` | ListPaymentAccounts | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `POST` | `/api/v1/payment-accounts` | CreatePaymentAccount | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts/page` | ListPaymentAccountPage | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
@@ -148,6 +156,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | inline | management web | required | `ViajantesTurismo.Management.Web/ManagementWebEndpoints.cs` |
 | `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
 | `GET` | `/documents/{id:guid}/download` | Download | management web | required | `ViajantesTurismo.Management.Web/DocumentArtifactProxyEndpoints.cs` |
+| `GET` | `/operations/gallery/{catalogTourId:guid}/placements/{sequence:long}/diagnostics` | DownloadGalleryPlacementDiagnostics | management web | required | `ViajantesTurismo.Management.Web/GalleryPlacementDiagnosticsEndpoints.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes

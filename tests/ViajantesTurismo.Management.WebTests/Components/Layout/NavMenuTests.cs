@@ -27,7 +27,7 @@ public class NavMenuTests : BunitContext
         var holdsLink = cut.Find("a[href='documents/holds']");
         holdsLink.TextContent.ShouldContain("Document holds", StringComparison.Ordinal);
         holdsLink.InnerHtml.ShouldContain("bi-lock", StringComparison.Ordinal);
-        cut.Find("a[href='operations/document-maintenance']").TextContent.ShouldContain("Document maintenance", StringComparison.Ordinal);
+        cut.Find("a[href='operations']").TextContent.ShouldContain("Operations", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,6 +42,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         cut.FindAll("a[href='documents/holds']").ShouldBeEmpty();
+        cut.FindAll("a[href='operations']").ShouldBeEmpty();
         cut.FindAll("a[href='operations/document-maintenance']").ShouldBeEmpty();
     }
 
@@ -57,6 +58,7 @@ public class NavMenuTests : BunitContext
 
         // Assert
         cut.Find("a[href='operations/document-maintenance']").TextContent.ShouldContain("Document maintenance", StringComparison.Ordinal);
+        cut.FindAll("a[href='operations']").ShouldBeEmpty();
         cut.FindAll("a[href='documents/holds']").ShouldBeEmpty();
     }
 

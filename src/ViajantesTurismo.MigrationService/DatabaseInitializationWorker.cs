@@ -6,6 +6,7 @@ using SharedKernel.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.MigrationService;
@@ -132,6 +133,10 @@ internal sealed class DatabaseInitializationWorker
         {
             var catalogDataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
             await PostgreSqlEventSourcingSchema.Initialize(catalogDataSource, options: null, ct);
+            if (serviceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
+            {
+                await CatalogGalleryProcessStatusIndexes.EnsureIndexes(catalogDataSource, ct);
+            }
         }
 
         if (await serviceProvider.ApplyMigrations<BrandingDbContext>(ct))

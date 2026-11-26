@@ -42,7 +42,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(connectionString));
         services.AddCatalogApplication();
         services.AddIntegrationEventOutbox<CatalogDbContext>();
-        services.AddIntegrationEventInbox<CatalogDbContext>();
+        CatalogInboxDuplicateRecorder.Register(services);
         services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         var serviceProvider = services.BuildServiceProvider();
 

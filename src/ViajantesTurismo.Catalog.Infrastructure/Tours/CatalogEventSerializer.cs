@@ -9,11 +9,15 @@ internal sealed class CatalogEventSerializer : IEventSerializer
 {
     private const string CatalogTourDraftCreatedEventType = "catalog.tours.draft-created.v1";
     private const string CatalogTourPresentationChangedEventType = "catalog.tours.presentation-changed.v1";
-    private const string CatalogTourGalleryChangedEventType = "catalog.tours.gallery-changed.v1";
-    private const string CatalogTourGalleryIntentRejectedEventType = "catalog.tours.gallery-intent-rejected.v1";
+    /// <summary>The persisted type for an applied Gallery placement.</summary>
+    internal const string CatalogTourGalleryChangedEventType = "catalog.tours.gallery-changed.v1";
+
+    /// <summary>The persisted type for a Gallery placement rejected after publication.</summary>
+    internal const string CatalogTourGalleryIntentRejectedEventType = "catalog.tours.gallery-intent-rejected.v1";
     private const string CatalogTourPublishedEventType = "catalog.tours.published.v1";
     private const string CatalogTourUnpublishedEventType = "catalog.tours.unpublished.v1";
-    private const string CatalogTourRetiredEventType = "catalog.tours.retired.v1";
+    /// <summary>The persisted type for retirement of a Catalog tour.</summary>
+    internal const string CatalogTourRetiredEventType = "catalog.tours.retired.v1";
 
     /// <summary>Returns the durable event type name for a registered Catalog event.</summary>
     public string GetEventType(object eventData)

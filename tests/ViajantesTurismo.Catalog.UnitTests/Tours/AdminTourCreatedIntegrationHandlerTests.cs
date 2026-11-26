@@ -27,7 +27,8 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
             }, new TestCatalogTourSlugLock()),
             store,
             Options.Create(new IntegrationEventOptions()),
-            clock);
+            clock,
+            NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(Guid.CreateVersion7(), now, Guid.CreateVersion7(), "boundary", "Boundary");
         // Act
         await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
@@ -44,7 +45,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -73,7 +74,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -138,7 +139,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -164,7 +165,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore(), new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions { IdempotencyLockDuration = configuredDuration }), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -191,7 +192,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -219,7 +220,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),
@@ -249,7 +250,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(eventStore, new TestCatalogTourSlugLock()),
             idempotencyStore,
-            Options.Create(new IntegrationEventOptions()), TimeProvider.System);
+            Options.Create(new IntegrationEventOptions()), TimeProvider.System, NoOpCatalogInboxDuplicateRecorder.Instance);
         var integrationEvent = new AdminTourCreatedIntegrationEvent(
             Guid.CreateVersion7(),
             TimeProvider.System.GetUtcNow(),

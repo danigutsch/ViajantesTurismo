@@ -25,6 +25,9 @@ namespace ViajantesTurismo.Admin.Api;
 [JsonSerializable(typeof(GetDocumentMaintenanceTimelineDto))]
 [JsonSerializable(typeof(GetDocumentMaintenanceExecutionsDto))]
 [JsonSerializable(typeof(CreateDocumentMaintenanceControlDto))]
+[JsonSerializable(typeof(GetMessagingHealthDto))]
+[JsonSerializable(typeof(GetCatalogDeliveryPageDto))]
+[JsonSerializable(typeof(GetOutboxDeliveryPageDto))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(Guid?[]))]
 internal sealed partial class AppJsonSerializerContext : JsonSerializerContext;
