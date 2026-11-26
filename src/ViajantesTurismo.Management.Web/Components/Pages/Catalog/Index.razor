@@ -65,6 +65,7 @@ else if (_total == 0)
 
 @code {
     private GridItemsProvider<CatalogTourListItemDto>? _loadTours;
+    private ((int Page, CatalogTourListSort Sort, bool Descending) Query, GridItemsProviderResult<CatalogTourListItemDto> Result)? _renderLoad;
     private int? _total;
     private string? _errorMessage;
     private readonly PaginationState _pagination = new() { ItemsPerPage = CatalogTourPageDto.ItemsPerPage };
@@ -95,16 +96,34 @@ else if (_total == 0)
         };
         var pageNumber = (request.StartIndex / CatalogTourPageDto.ItemsPerPage) + 1;
         var descending = request.SortByColumn is not null && !request.SortByAscending;
-        var previousTotal = _total;
-        var page = await FetchTours(pageNumber, sort, descending, request.CancellationToken);
-        if (_total != previousTotal)
+        var query = (pageNumber, sort, descending);
+        if (_renderLoad is { } renderLoad && renderLoad.Query == query)
         {
-            await InvokeAsync(StateHasChanged);
+            request.CancellationToken.ThrowIfCancellationRequested();
+            _renderLoad = null;
+            return renderLoad.Result;
         }
 
-        return page is not null
+        var previousTotal = _total;
+        var page = await FetchTours(pageNumber, sort, descending, request.CancellationToken);
+        var result = page is not null
             ? GridItemsProviderResult.From(page.Items.ToArray(), page.Total)
             : GridItemsProviderResult.From(Array.Empty<CatalogTourListItemDto>(), 0);
+        if (_total != previousTotal)
+        {
+            // QuickGrid can request the same page during this render, before it records the provider result.
+            _renderLoad = (query, result);
+            try
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+            finally
+            {
+                _renderLoad = null;
+            }
+        }
+
+        return result;
     }
 
     private async ValueTask<CatalogTourPageDto?> FetchTours(int pageNumber, CatalogTourListSort sort, bool descending, CancellationToken ct)

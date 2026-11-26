@@ -47,6 +47,8 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         using var browser = new HttpClient { BaseAddress = management.BaseUri, Timeout = TimeSpan.FromSeconds(15) };
         var first = Enumerable.Range(0, 10);
         var lastReversed = Enumerable.Range(tourCount - 10, 10).Reverse();
+        var bookmarkedPage = new Uri("/catalog/tours?page=2&sort=Identifier&direction=desc", UriKind.Relative);
+        var expectedBookmarkedIdentifiers = Enumerable.Range(tourCount - 20, 10).Reverse().Select(index => $"{index:D3}");
         (CatalogTourListSort Sort, bool Descending, IEnumerable<int> Expected)[] orderingCases =
         [
             (CatalogTourListSort.Identifier, false, first),
@@ -62,6 +64,8 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         var secondPage = await catalogClient.GetTourPage(2, CatalogTourListSort.Title, descending: false, ct);
         var html = await browser.GetStringAsync(new Uri("/catalog/tours", UriKind.Relative), ct);
         var firstViewReads = scenario.PageReads;
+        var bookmarkedHtml = await browser.GetStringAsync(bookmarkedPage, ct);
+        var bookmarkedViewReads = scenario.PageReads - firstViewReads;
         var orderedPages = new List<CatalogTourPageDto?>(orderingCases.Length);
         foreach (var (sort, descending, _) in orderingCases)
         {
@@ -80,7 +84,16 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         html.ShouldNotContain("SSRTOUR-010", StringComparison.Ordinal);
         PrerenderedComponentState.ShouldKeepServerStateBelow(html);
         firstViewReads.ShouldBe(2);
-        scenario.PageReads.ShouldBe(2 + orderingCases.Length);
+        var bookmarkedIdentifiers = bookmarkedHtml.Split(">SSRTOUR-", StringSplitOptions.None)
+            .Skip(1)
+            .Select(row => row.Split('<', 2)[0]);
+        bookmarkedIdentifiers.ShouldBe(expectedBookmarkedIdentifiers);
+        bookmarkedHtml.ShouldContain("<!--Blazor:", StringComparison.Ordinal);
+        bookmarkedHtml.ShouldContain("aria-sort=\"descending\"", StringComparison.Ordinal);
+        bookmarkedHtml.ShouldNotContain("<em>Loading...</em>", StringComparison.Ordinal);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(bookmarkedHtml);
+        bookmarkedViewReads.ShouldBe(1);
+        scenario.PageReads.ShouldBe(3 + orderingCases.Length);
         for (var index = 0; index < orderingCases.Length; index++)
         {
             var orderedPage = orderedPages[index].ShouldNotBeNull();
