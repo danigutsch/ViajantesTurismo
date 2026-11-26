@@ -31,7 +31,7 @@ On November 26, 2026, the app owner approved the license-metadata exception for 
 `0.1.0-alpha.970.1` at revision `f164e9716d8c1e598cafb9dc954f884cbab4eb4f`. It classifies the archive's
 Apache-2.0 nuspec metadata for dependency review. Native redistribution obligations remain in the
 distribution audit. The existing approval for `StreamJsonRpc` `2.25.29` carries forward on its
-unchanged archive. [App approval and scope](https://github.com/danigutsch/ViajantesTurismo/issues/1658)
+unchanged archive.
 
 | Verified input | SHA-256 |
 | --- | --- |
