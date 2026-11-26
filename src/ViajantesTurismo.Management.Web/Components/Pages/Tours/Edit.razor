@@ -61,11 +61,11 @@ else
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="startDate" class="form-label">Start Date</label>
+                <label for="startDate" class="form-label"><DisplayName For="@(() => _model.StartDate)" /></label>
                 <InputDate id="startDate" class="form-control" @bind-Value="_model.StartDate"/>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="endDate" class="form-label">End Date</label>
+                <label for="endDate" class="form-label"><DisplayName For="@(() => _model.EndDate)" /></label>
                 <InputDate id="endDate" class="form-control" @bind-Value="_model.EndDate"/>
             </div>
         </div>
@@ -89,11 +89,11 @@ else
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="price" class="form-label">Base Price</label>
+                <label for="price" class="form-label"><DisplayName For="@(() => _model.Price)" /></label>
                 <InputNumber id="price" class="form-control" @bind-Value="_model.Price" @bind-Value:format="F2"/>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="singleRoom" class="form-label">Single Room Supplement</label>
+                <label for="singleRoom" class="form-label"><DisplayName For="@(() => _model.SingleRoomSupplementPrice)" /></label>
                 <InputNumber id="singleRoom" class="form-control" @bind-Value="_model.SingleRoomSupplementPrice"
                              @bind-Value:format="F2"/>
             </div>
@@ -101,18 +101,18 @@ else
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="regularBike" class="form-label">Regular Bike Price</label>
+                <label for="regularBike" class="form-label"><DisplayName For="@(() => _model.RegularBikePrice)" /></label>
                 <InputNumber id="regularBike" class="form-control" @bind-Value="_model.RegularBikePrice"
                              @bind-Value:format="F2"/>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="eBike" class="form-label">E-Bike Price</label>
+                <label for="eBike" class="form-label"><DisplayName For="@(() => _model.EBikePrice)" /></label>
                 <InputNumber id="eBike" class="form-control" @bind-Value="_model.EBikePrice" @bind-Value:format="F2"/>
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="services" class="form-label">Included Services</label>
+            <label for="services" class="form-label"><DisplayName For="@(() => _model.ServicesInput)" /></label>
             <InputTextArea id="services" class="form-control" @bind-Value="_model.ServicesInput" rows="5"
                            placeholder="Enter one service per line, e.g.:
 Hotel
@@ -125,12 +125,12 @@ Bike rental"/>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="minCustomers" class="form-label">Minimum Customers</label>
+                <label for="minCustomers" class="form-label"><DisplayName For="@(() => _model.MinCustomers)" /></label>
                 <InputNumber id="minCustomers" class="form-control" @bind-Value="_model.MinCustomers"/>
                 <div class="form-text">Minimum number of customers required (1-20)</div>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="maxCustomers" class="form-label">Maximum Customers</label>
+                <label for="maxCustomers" class="form-label"><DisplayName For="@(() => _model.MaxCustomers)" /></label>
                 <InputNumber id="maxCustomers" class="form-control" @bind-Value="_model.MaxCustomers"/>
                 <div class="form-text">Maximum number of customers allowed (1-20)</div>
             </div>

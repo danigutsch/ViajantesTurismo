@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.TestHost;
 using SharedKernel.AspNetCore.Authentication.Bff;
 using Polly.Timeout;
@@ -18,13 +20,16 @@ public sealed class DocumentArtifactProxyEndpointTests
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
-        var documentsApiClient = new FakeDocumentsApiClient
-        {
-            Artifact = new DocumentArtifactResponse("<html>contract</html>"u8.ToArray(), $"{documentId:N}.html")
-        };
+        const string expectedHtml = "<html>contract</html>";
+        const string prefix = "outside:";
+        var backing = Encoding.UTF8.GetBytes(prefix + expectedHtml + ":outside");
+        var artifact = new DocumentArtifactResponse(backing.AsMemory(prefix.Length, expectedHtml.Length), $"{documentId:N}.html");
+        var documentsApiClient = new FakeDocumentsApiClient { Artifact = artifact };
+        object? endpointResult = null;
         using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
             Xunit.TestContext.Current.CancellationToken,
-            documentsApiClient: documentsApiClient);
+            documentsApiClient: documentsApiClient,
+            observeEndpointResult: result => endpointResult = result);
         using var client = host.GetTestClient();
 
         // Act
@@ -42,7 +47,10 @@ public sealed class DocumentArtifactProxyEndpointTests
         response.Headers.GetValues("Content-Security-Policy").ShouldBe(["default-src 'none'; sandbox"]);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         response.Content.Headers.ContentDisposition.ShouldNotBeNull().FileNameStar.ShouldBe($"{documentId:N}.html");
-        html.ShouldBe("<html>contract</html>");
+        response.Content.Headers.ContentLength.ShouldBe(artifact.Content.Length);
+        html.ShouldBe(expectedHtml);
+        var attachment = endpointResult.ShouldBeOfType<FileContentHttpResult>();
+        attachment.FileContents.Equals(artifact.Content).ShouldBeTrue();
     }
 
     [Fact]

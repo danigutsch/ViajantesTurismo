@@ -41,7 +41,7 @@ internal static class DocumentArtifactProxyEndpoints
 
             HttpCacheHeaders.SetNoStore(httpContext);
             httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
-            return TypedResults.File(artifact.Content.ToArray(), DocumentArtifactResponse.ContentType, artifact.FileName, enableRangeProcessing: false);
+            return TypedResults.Bytes(artifact.Content, DocumentArtifactResponse.ContentType, artifact.FileName, enableRangeProcessing: false);
         }
         catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
         {

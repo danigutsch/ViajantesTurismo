@@ -36,7 +36,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileContentHttpResult"
+                }
+              }
+            }
           },
           "304": {
             "description": "Not Modified"
@@ -45,6 +52,14 @@
             "description": "Not Found"
           }
         }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FileContentHttpResult": {
+        "type": "string",
+        "format": "binary"
       }
     }
   },

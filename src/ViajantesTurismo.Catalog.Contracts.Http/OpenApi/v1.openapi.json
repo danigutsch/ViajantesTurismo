@@ -1804,7 +1804,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileContentHttpResult"
+                }
+              }
+            }
           },
           "304": {
             "description": "Not Modified"
@@ -3024,6 +3031,10 @@
             "format": "int64"
           }
         }
+      },
+      "FileContentHttpResult": {
+        "type": "string",
+        "format": "binary"
       },
       "GetCatalogGalleryPlacementStatusDto": {
         "required": [
