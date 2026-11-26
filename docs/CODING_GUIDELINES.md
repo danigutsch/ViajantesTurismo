@@ -324,6 +324,15 @@ if (_bookings.Count > Capacity.MaxCustomers)
 
 Use argument exceptions for invalid caller input and `Result` for expected business validation.
 
+Use `Result<T>.Map` for a direct success projection when the input is a validated result and
+the requested success status is `Ok`. Use `Option<T>.Map` to project a present value while
+preserving absence. Keep explicit control flow for ordered effects, multiple validation steps,
+and cases where a default result would otherwise change how the method fails.
+
+When migrating a call site, compare both the successful value and the failure details. For
+example, Catalog tour presentation projects the sanitized domain value into the update record
+and preserves its field errors.
+
 ## Logging
 
 Production logging should use source-generated `LoggerMessage` methods for stable event IDs, event
