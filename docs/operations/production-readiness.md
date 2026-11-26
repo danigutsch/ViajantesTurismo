@@ -213,8 +213,7 @@ principals, and CI credentials scoped to their own workloads.
 An Admin can save and explicitly approve the same payment draft. Optional independent review
 still requires a different reviewer. The [payment guide](../payments.md#staff-workflow) describes
 the confirmation and audit evidence. The proposed distinct-subject hold-release workflow
-remains governed by the [legal-hold policy](document-retention-and-legal-hold.md) and
-[hold-release follow-up](https://github.com/danigutsch/ViajantesTurismo/issues/1606).
+remains governed by the [legal-hold policy](document-retention-and-legal-hold.md#legal-hold).
 
 ## Management OIDC security store
 
