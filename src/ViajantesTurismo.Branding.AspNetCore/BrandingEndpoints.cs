@@ -43,7 +43,7 @@ internal static class BrandingEndpoints
                 // Keep the exact address even when the output cache normalizes the request path.
                 .SetVaryByRouteValue(BrandingLogoPath.HashParameter)
                 .SetVaryByHeader(HeaderNames.Origin))
-            .Produces(StatusCodes.Status200OK, contentType: BrandingLogo.EncodedContentType)
+            .Produces<FileContentHttpResult>(StatusCodes.Status200OK, contentType: BrandingLogo.EncodedContentType)
             .Produces(StatusCodes.Status304NotModified)
             .Produces(StatusCodes.Status404NotFound)
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);

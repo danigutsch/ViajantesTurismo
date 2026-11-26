@@ -71,20 +71,33 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     [Fact]
     [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DriftGuardCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, SharedKernel.Testing.TestTraitValues.OpenApiSurface)]
-    public void Public_logo_route_publishes_ok_not_modified_and_not_found()
+    public void Public_logo_route_describes_webp_content_and_bodyless_status_responses()
     {
         // Arrange
+        const string schemaName = "FileContentHttpResult";
         var document = BrandingOpenApiArtifactDriftGuard.CreateSnapshotSet().GetCanonicalSnapshot("public-branding").AsObject();
         var operation = document["paths"].ShouldNotBeNull().AsObject()
             ["/api/v1/public/branding/logo/{sha256}"].ShouldNotBeNull().AsObject()
             ["get"].ShouldNotBeNull().AsObject();
 
         // Act
-        var responseStatuses = operation["responses"].ShouldNotBeNull().AsObject()
-            .Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
+        var responses = operation["responses"].ShouldNotBeNull().AsObject();
+        var responseStatuses = responses.Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
+        var successfulContent = responses["200"].ShouldNotBeNull()["content"];
 
         // Assert
         responseStatuses.ShouldBe(["200", "304", "404"]);
+        var body = successfulContent.ShouldNotBeNull().AsObject();
+        var contentTypes = body.Select(content => content.Key).ToArray();
+        contentTypes.ShouldBe(["image/webp"]);
+        var responseSchema = body["image/webp"].ShouldNotBeNull()["schema"].ShouldNotBeNull();
+        responseSchema["$ref"].ShouldNotBeNull().GetValue<string>().ShouldBe($"#/components/schemas/{schemaName}");
+        var binarySchema = document["components"].ShouldNotBeNull()
+            ["schemas"].ShouldNotBeNull()[schemaName].ShouldNotBeNull();
+        binarySchema["type"].ShouldNotBeNull().GetValue<string>().ShouldBe("string");
+        binarySchema["format"].ShouldNotBeNull().GetValue<string>().ShouldBe("binary");
+        responses["304"].ShouldNotBeNull().AsObject().ContainsKey("content").ShouldBeFalse();
+        responses["404"].ShouldNotBeNull().AsObject().ContainsKey("content").ShouldBeFalse();
     }
 
     [Fact]

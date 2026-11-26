@@ -28,7 +28,8 @@ internal static class ManagementWebEndpointTestHost
         CancellationToken ct,
         ICatalogToursApiClient? catalogToursApi = null,
         IDocumentsApiClient? documentsApiClient = null,
-        ICatalogGalleryOperationsApiClient? galleryOperationsApi = null)
+        ICatalogGalleryOperationsApiClient? galleryOperationsApi = null,
+        Action<object?>? observeEndpointResult = null)
     {
         return await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
@@ -66,7 +67,7 @@ internal static class ManagementWebEndpointTestHost
                     app.UseAuthentication();
                     app.UseAuthorization();
                     app.UseAntiforgery();
-                    app.UseEndpoints(static endpoints =>
+                    app.UseEndpoints(endpoints =>
                     {
                         endpoints.MapGet(AntiforgeryTokenPath, static (HttpContext context, IAntiforgery antiforgery) =>
                         {
@@ -75,7 +76,21 @@ internal static class ManagementWebEndpointTestHost
                             context.Response.Headers.Append(AntiforgeryRequestTokenHeader, tokens.RequestToken);
                             return Results.NoContent();
                         }).AllowAnonymous();
-                        endpoints.MapManagementWebEndpoints();
+                        if (observeEndpointResult is null)
+                        {
+                            endpoints.MapManagementWebEndpoints();
+                        }
+                        else
+                        {
+                            endpoints.MapGroup(string.Empty)
+                                .AddEndpointFilter(async (context, next) =>
+                                {
+                                    var result = await next(context);
+                                    observeEndpointResult(result);
+                                    return result;
+                                })
+                                .MapManagementWebEndpoints();
+                        }
                     });
                 }))
             .StartAsync(ct);
