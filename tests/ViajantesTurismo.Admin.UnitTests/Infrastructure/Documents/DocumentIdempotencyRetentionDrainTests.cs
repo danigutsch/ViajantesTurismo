@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
 [TestFocus(TestFocus.CoreBehavior)]
 [Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
-public sealed class DocumentIdempotencyRetentionHostedServiceTests
+public sealed class DocumentIdempotencyRetentionDrainTests
 {
     [Fact]
     public async Task RunBatch_purges_expired_entries_through_the_generated_mediator()

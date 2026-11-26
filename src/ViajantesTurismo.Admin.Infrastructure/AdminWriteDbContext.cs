@@ -126,6 +126,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditPurgeConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentRetentionPurgeConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentMaintenanceControlAuditConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingProjectionConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingInboxConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingRecoveryConfiguration());

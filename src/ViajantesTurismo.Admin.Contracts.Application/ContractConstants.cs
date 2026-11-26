@@ -44,6 +44,15 @@ public static class ContractConstants
     /// <summary>Gets the upper limit for a requested booking financial window.</summary>
     public const int MaxBookingFinancialPageSize = 100;
 
+    /// <summary>Gets the default size of a document maintenance timeline page.</summary>
+    public const int DefaultDocumentMaintenancePageSize = 20;
+
+    /// <summary>Gets the maximum size of a document maintenance timeline page.</summary>
+    public const int MaxDocumentMaintenancePageSize = 100;
+
+    /// <summary>The maximum length of a confirmed maintenance control reason.</summary>
+    public const int MaxDocumentMaintenanceControlReasonLength = 500;
+
     /// <summary>The required HTTP header identifying an idempotent financial or document command.</summary>
     public const string IdempotencyKeyHeaderName = "Idempotency-Key";
 

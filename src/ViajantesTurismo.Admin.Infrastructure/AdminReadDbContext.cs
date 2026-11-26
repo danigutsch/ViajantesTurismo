@@ -21,6 +21,10 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
     public DbSet<Customer> Customers => Set<Customer>();
     /// <summary>Document drafts queried without tracking.</summary>
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
+    /// <summary>Metadata evidence from the document audit retention job.</summary>
+    public DbSet<DocumentAuditPurgeRecord> DocumentAuditPurgeRecords => Set<DocumentAuditPurgeRecord>();
+    /// <summary>Metadata evidence from the draft and idempotency retention jobs.</summary>
+    public DbSet<DocumentRetentionPurgeRecord> DocumentRetentionPurgeRecords => Set<DocumentRetentionPurgeRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +40,8 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentArtifactBodyConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentAuditPurgeConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentRetentionPurgeConfiguration());
     }
 
     public override int SaveChanges()

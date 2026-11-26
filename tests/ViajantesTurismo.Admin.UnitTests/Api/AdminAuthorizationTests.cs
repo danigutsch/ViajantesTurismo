@@ -9,7 +9,7 @@ public sealed class AdminAuthorizationTests
     public void Role_mapping_is_allowlisted_and_case_sensitive()
     {
         // Arrange
-        string[] expectedRoles = ["Admin", "Operator", "Reader"];
+        string[] expectedRoles = ["Admin", "Operator", "Reader", "OperationsScheduleController"];
 
         // Act
         var permissionsByRole = AdminAuthorization.PermissionsByRole;
@@ -22,7 +22,7 @@ public sealed class AdminAuthorizationTests
     }
 
     [Fact]
-    public void Admin_role_receives_every_admin_API_permission()
+    public void Admin_role_can_read_schedule_status_without_schedule_control()
     {
         // Arrange
         string[] expectedPermissions =
@@ -37,6 +37,7 @@ public sealed class AdminAuthorizationTests
             AdminAuthorization.DocumentManage,
             AdminAuthorization.DocumentHold,
             AdminAuthorization.DocumentationRead,
+            AdminAuthorization.OperationsScheduleRead,
             AdminAuthorization.PaymentManage,
             AdminAuthorization.PaymentRead,
             AdminAuthorization.PaymentWrite,
@@ -47,6 +48,20 @@ public sealed class AdminAuthorizationTests
 
         // Act
         var actualPermissions = AdminAuthorization.PermissionsByRole["Admin"];
+
+        // Assert
+        actualPermissions.Except(expectedPermissions, StringComparer.Ordinal).ShouldBeEmpty();
+        expectedPermissions.Except(actualPermissions, StringComparer.Ordinal).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Schedule_controller_role_receives_only_schedule_read_and_control()
+    {
+        // Arrange
+        string[] expectedPermissions = [AdminAuthorization.OperationsScheduleRead, AdminAuthorization.OperationsScheduleControl];
+
+        // Act
+        var actualPermissions = AdminAuthorization.PermissionsByRole["OperationsScheduleController"];
 
         // Assert
         actualPermissions.Except(expectedPermissions, StringComparer.Ordinal).ShouldBeEmpty();

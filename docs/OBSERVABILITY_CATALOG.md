@@ -174,6 +174,10 @@ group log records by application resource and severity. Use the owner and EventI
 | `ApplicationVersionLogger/1001` | Application version (information) | application, version | Which version of a worker or host produced the surrounding signals? | `logs`, Recent logs | keep |
 | `PermanentRedirectExtensions/4004` | Redirect target rejected (warning) | none | Did a redirect rule return a target outside the permitted local path form? | `logs`, Recent warnings and errors | keep |
 | `PollingBackgroundService/3001` | Polling work failed (error) | service, error type | Which background service will retry work? | `logs`, Recent warnings and errors | keep |
+| `DurableDocumentMaintenanceHostedService/3010` | Scheduler unavailable (warning) | error type | Could the worker access the durable schedule? | `logs`, Recent warnings and errors | keep |
+| `DurableDocumentMaintenanceHostedService/3011` | Scheduler lease lost (warning) | execution ID | Which maintenance execution did the worker stop owning? | `logs`, Recent warnings and errors | keep |
+| `DurableDocumentMaintenanceHostedService/3012` | Maintenance drain failed (error) | job name, execution ID, error type | Which scheduled job failed while processing items? | `logs`, Recent warnings and errors | keep |
+| `DurableDocumentMaintenanceHostedService/3013` | Unrecognized maintenance job (error) | execution ID | Which execution was refused because its job was unrecognized? | `logs`, Recent warnings and errors | keep |
 | `ResultTransactionBehavior/2001` | Transaction hook failed (error) | command and hook types, hook kind, error type | Did a follow-up step fail after transaction completion? | `logs`, Recent warnings and errors | keep |
 | `PostgreSqlIntegrationEventTransportConsumer/2101` | Delivery retry scheduled (warning) | consumer, transport message ID, attempt | Which transport delivery failed and will retry? | `logs`, Recent warnings and errors | keep |
 | `PostgreSqlIntegrationEventTransportConsumer/2102` | Delivery poisoned (error) | consumer, transport message ID, attempt | Which delivery exhausted its retries? | `logs`, Recent warnings and errors | keep |

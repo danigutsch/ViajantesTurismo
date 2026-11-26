@@ -2,13 +2,13 @@ using System.Diagnostics.Metrics;
 using SharedKernel.DispositionHold;
 using SharedKernel.Mediator;
 using SharedKernel.Scheduling;
-using RecordedLog = SharedKernel.Testing.Logging.RecordedLog;
 using RecordingLoggerProvider = SharedKernel.Testing.Logging.RecordingLoggerProvider;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing;
@@ -18,23 +18,23 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
 /// <summary>
-/// Wires the draft retention hosted service to a fake document store and fixed clock for batch tests.
+/// Wires the draft retention drain to a fake document store and fixed clock for batch tests.
 /// </summary>
-internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposable, IDisposable
+internal sealed class DocumentDraftRetentionDrainFixture : IAsyncDisposable, IDisposable
 {
     private readonly ServiceProvider provider;
-    private readonly DocumentDraftRetentionHostedService hostedService;
+    private readonly DocumentMaintenanceDrain drain;
 
-    private DocumentDraftRetentionHostedServiceFixture(ServiceProvider provider, FakeDocumentStore documentStore)
+    private DocumentDraftRetentionDrainFixture(ServiceProvider provider, FakeDocumentStore documentStore)
     {
         this.provider = provider;
         DocumentStore = documentStore;
         Logs = provider.GetRequiredService<RecordingLoggerProvider>();
         Metrics = new DocumentOperationMetricCapture(provider.GetRequiredService<IMeterFactory>());
-        hostedService = new DocumentDraftRetentionHostedService(
+        drain = new DocumentMaintenanceDrain(
             provider.GetRequiredService<IServiceScopeFactory>(),
             provider.GetRequiredService<DocumentOperationTelemetry>(),
-            provider.GetRequiredService<ILogger<DocumentDraftRetentionHostedService>>());
+            provider.GetRequiredService<ILogger<DocumentMaintenanceDrain>>());
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
     /// <summary>
     /// Creates a fixture whose fake store contains <paramref name="draft"/> and whose clock is fixed at <paramref name="now"/>.
     /// </summary>
-    public static DocumentDraftRetentionHostedServiceFixture Create(DateTimeOffset now, DocumentDraft draft, Exception? purgeFailure = null)
+    public static DocumentDraftRetentionDrainFixture Create(DateTimeOffset now, DocumentDraft draft, Exception? purgeFailure = null)
     {
         var store = new FakeDocumentStore(purgeFailure);
         store.Documents.Add(draft.Id, draft);
@@ -82,67 +82,36 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         services.AddMediator();
         var provider = services.BuildServiceProvider();
 
-        return new DocumentDraftRetentionHostedServiceFixture(provider, store);
+        return new DocumentDraftRetentionDrainFixture(provider, store);
     }
 
     /// <summary>
-    /// Runs one purge batch on the hosted service and returns the purged count.
+    /// Runs one purge batch on the drain and returns the purged count.
     /// </summary>
-    public ValueTask<int> RunBatch(CancellationToken ct) => hostedService.RunBatch(ct);
+    public ValueTask<int> RunBatch(CancellationToken ct) => drain.RunBatch(DocumentMaintenanceJob.Drafts, ct);
 
-    /// <summary>Starts and stops the polling worker around one observed scheduled failure.</summary>
-    public async Task<RecordedLog> ObserveScheduledFailure(CancellationToken ct)
+    /// <summary>Runs one complete drain cycle.</summary>
+    public async ValueTask RunDrain(CancellationToken ct)
     {
-        var observedFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var listener = new MeterListener();
-        listener.InstrumentPublished = (instrument, recorder) =>
-        {
-            if (instrument.Name == SchedulingTelemetry.MetricPollingFailures)
-            {
-                recorder.EnableMeasurementEvents(instrument);
-            }
-        };
-        listener.SetMeasurementEventCallback<long>((_, _, tags, _) =>
-        {
-            foreach (var tag in tags)
-            {
-                if (tag.Key == SchedulingTelemetry.TagServiceName && Equals(tag.Value, "admin-document-draft-retention"))
-                {
-                    observedFailure.TrySetResult();
-                }
-            }
-        });
-        listener.Start();
-
-        await hostedService.StartAsync(ct);
-        try
-        {
-            await observedFailure.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
-        }
-        finally
-        {
-            await hostedService.StopAsync(ct);
-        }
-
-        return Logs.Records.Single(record => record.EventId.Id == 3001 && record.EventId.Name == "PollingCycleFailed");
+        using var observation = new BatchDrain(DocumentMaintenanceSchedule.GetJobName(DocumentMaintenanceJob.Drafts));
+        await observation.Run(RunBatch, ct);
     }
 
+
     /// <summary>
-    /// Disposes the hosted service and the service provider.
+    /// Disposes the drain and the service provider.
     /// </summary>
     public void Dispose()
     {
-        hostedService.Dispose();
         Metrics.Dispose();
         provider.Dispose();
     }
 
     /// <summary>
-    /// Asynchronously disposes the hosted service and the service provider.
+    /// Asynchronously disposes the drain and the service provider.
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        hostedService.Dispose();
         Metrics.Dispose();
         await provider.DisposeAsync();
     }

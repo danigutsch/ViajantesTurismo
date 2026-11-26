@@ -5578,6 +5578,273 @@
         ]
       }
     },
+    "/api/v1/operations/document-maintenance": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets document maintenance history and schedules.",
+        "description": "Reads recent counts-only document maintenance batches and the current durable schedule metadata.",
+        "operationId": "GetDocumentMaintenanceHistory",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentMaintenanceHistoryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/document-maintenance/{job}": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets document maintenance timeline.",
+        "description": "Reads a bounded page of counts-only batches and current durable schedule metadata for one job.",
+        "operationId": "GetDocumentMaintenanceTimeline",
+        "parameters": [
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beforeOccurredAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "beforeRunId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentMaintenanceTimelineDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/document-maintenance/{job}/executions": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Gets document maintenance executions.",
+        "description": "Reads a bounded page of durable execution metadata for one maintenance job.",
+        "operationId": "GetDocumentMaintenanceExecutions",
+        "parameters": [
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "beforeStartedAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "beforeRunId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentMaintenanceExecutionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/document-maintenance/{job}/{action}": {
+      "post": {
+        "tags": [
+          "Operations"
+        ],
+        "summary": "Controls a document maintenance schedule.",
+        "description": "Applies a confirmed pause, resume, trigger or retry for an allowlisted maintenance job.",
+        "operationId": "ControlDocumentMaintenance",
+        "parameters": [
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocumentMaintenanceControlDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/payment-accounts": {
       "get": {
         "tags": [
@@ -6941,6 +7208,31 @@
           }
         }
       },
+      "CreateDocumentMaintenanceControlDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirmed": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "failedRunId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "CreatePaymentAccountDto": {
         "required": [
           "label",
@@ -7365,6 +7657,231 @@
       },
       "DiscountTypeDto": {
         "type": "integer"
+      },
+      "DocumentMaintenanceExecutionCursorDto": {
+        "required": [
+          "startedAtUtc",
+          "runId"
+        ],
+        "type": "object",
+        "properties": {
+          "startedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "DocumentMaintenanceExecutionDto": {
+        "required": [
+          "runId",
+          "startedAtUtc",
+          "scheduledForUtc",
+          "finishedAtUtc",
+          "retryAtUtc",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduledForUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "finishedAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "retryAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentMaintenanceExecutionStatus"
+          }
+        }
+      },
+      "DocumentMaintenanceExecutionStatus": {
+        "enum": [
+          "Unknown",
+          "Running",
+          "Succeeded",
+          "Cancelled",
+          "Failed",
+          "RetryScheduled",
+          "TerminalFailure"
+        ]
+      },
+      "DocumentMaintenanceHistoryDto": {
+        "required": [
+          "draftRuns",
+          "auditRuns",
+          "idempotencyRuns",
+          "schedules"
+        ],
+        "type": "object",
+        "properties": {
+          "draftRuns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceRunDto"
+            }
+          },
+          "auditRuns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceRunDto"
+            }
+          },
+          "idempotencyRuns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceRunDto"
+            }
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceScheduleDto"
+            }
+          }
+        }
+      },
+      "DocumentMaintenanceJob": {
+        "enum": [
+          "Drafts",
+          "Audit",
+          "Idempotency"
+        ]
+      },
+      "DocumentMaintenanceRunCursorDto": {
+        "required": [
+          "occurredAtUtc",
+          "runId"
+        ],
+        "type": "object",
+        "properties": {
+          "occurredAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "DocumentMaintenanceRunDto": {
+        "required": [
+          "occurredAtUtc",
+          "purgedCount",
+          "heldCount",
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "occurredAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "purgedCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "heldCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "outcome": {
+            "type": "string"
+          }
+        }
+      },
+      "DocumentMaintenanceScheduleDto": {
+        "required": [
+          "job",
+          "isPaused",
+          "nextDueAtUtc",
+          "fixedDelay",
+          "activeRun",
+          "latestRun"
+        ],
+        "type": "object",
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/DocumentMaintenanceJob"
+          },
+          "isPaused": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "nextDueAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "fixedDelay": {
+            "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activeRun": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentMaintenanceExecutionDto"
+              }
+            ]
+          },
+          "latestRun": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentMaintenanceExecutionDto"
+              }
+            ]
+          },
+          "isDue": {
+            "type": "boolean"
+          }
+        }
       },
       "DocumentManualReviewReasonsDto": {
         "type": "integer"
@@ -8425,6 +8942,65 @@
             "type": [
               "null",
               "boolean"
+            ]
+          }
+        }
+      },
+      "GetDocumentMaintenanceExecutionsDto": {
+        "required": [
+          "executions",
+          "next"
+        ],
+        "type": "object",
+        "properties": {
+          "executions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceExecutionDto"
+            }
+          },
+          "next": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentMaintenanceExecutionCursorDto"
+              }
+            ]
+          }
+        }
+      },
+      "GetDocumentMaintenanceTimelineDto": {
+        "required": [
+          "runs"
+        ],
+        "type": "object",
+        "properties": {
+          "runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentMaintenanceRunDto"
+            }
+          },
+          "next": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentMaintenanceRunCursorDto"
+              }
+            ]
+          },
+          "schedule": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentMaintenanceScheduleDto"
+              }
             ]
           }
         }
@@ -10590,6 +11166,9 @@
     },
     {
       "name": "Errors"
+    },
+    {
+      "name": "Operations"
     },
     {
       "name": "PaymentAccounts"

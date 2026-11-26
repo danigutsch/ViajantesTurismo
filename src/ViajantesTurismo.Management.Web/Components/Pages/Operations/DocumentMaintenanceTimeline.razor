@@ -1,0 +1,113 @@
+@page "/operations/document-maintenance/{Job}"
+@attribute [Authorize(Roles = DocumentMaintenanceAccess.ReadRoles)]
+@using SharedKernel.AspNetCore.Authentication.Bff
+@inject IDocumentMaintenanceTimelineApiClient TimelineApi
+
+<PageTitle>@_title</PageTitle>
+
+<h1 tabindex="-1" @ref="_heading">@_title</h1>
+<p><a href="operations/document-maintenance">Back to document maintenance</a></p>
+
+@if (_job is { } job && _page?.Schedule is { } schedule && schedule.Job == job)
+{
+    <DocumentMaintenanceSchedulePanel @key="job" Schedule="schedule" Changed="ReloadSchedule" />
+}
+
+@if (_loading)
+{
+    <p role="status">Loading recorded batches…</p>
+}
+else if (_job is null)
+{
+    <p role="status">Maintenance job not found.</p>
+}
+else
+{
+    @if (_page is null)
+    {
+        <p role="alert">Maintenance history is unavailable.</p>
+    }
+    else
+    {
+        @if (_page.Schedule?.Job != _job)
+        {
+            <p>Schedule details are unavailable.</p>
+        }
+        <DocumentMaintenanceRunTable Title="Recorded batches" Runs="_page.Runs" />
+    }
+
+    <nav aria-label="Maintenance timeline pages" class="d-flex gap-3">
+        <button type="button" class="btn btn-outline-secondary" disabled="@(_before is null && _page is not null)" @onclick="ReadLatest">Latest page</button>
+        <button type="button" class="btn btn-outline-secondary" disabled="@(_page?.Next is null)" @onclick="ReadEarlier">Earlier page</button>
+    </nav>
+}
+
+@code {
+    [Parameter]
+    public string? Job { get; set; }
+
+    private DocumentMaintenanceJob? _job;
+    private GetDocumentMaintenanceTimelineDto? _page;
+    private ElementReference _heading;
+    private string _title = "Maintenance timeline";
+    private bool _loading;
+    private DocumentMaintenanceRunCursorDto? _before;
+    private int _loadVersion;
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (!Enum.TryParse<DocumentMaintenanceJob>(Job, ignoreCase: true, out var selected)
+            || !string.Equals(selected.ToString(), Job, StringComparison.OrdinalIgnoreCase))
+        {
+            _loadVersion++;
+            _job = null;
+            _page = null;
+            _title = "Maintenance timeline";
+            _loading = false;
+            return Task.CompletedTask;
+        }
+
+        _job = selected;
+        _title = $"{DocumentMaintenanceScheduleDisplay.JobTitle(selected)} timeline";
+        return Read(null, moveFocus: false);
+    }
+
+    private Task ReadLatest() => Read(null);
+
+    private Task ReadEarlier() => _page?.Next is { } next ? Read(next) : Task.CompletedTask;
+
+    private Task ReloadSchedule(DocumentMaintenanceJob job) => _job == job ? Read(_before, moveFocus: false) : Task.CompletedTask;
+
+    private async Task Read(DocumentMaintenanceRunCursorDto? before, bool moveFocus = true)
+    {
+        if (_job is not { } job)
+        {
+            return;
+        }
+
+        var version = ++_loadVersion;
+        _loading = true;
+        _before = before;
+        if (moveFocus)
+        {
+            await _heading.FocusAsync();
+        }
+
+        GetDocumentMaintenanceTimelineDto? page;
+        try
+        {
+            var outcome = await TimelineApi.Read(job, before, CancellationToken.None);
+            page = outcome.Kind == HttpOutcomeKind.Succeeded ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            page = null;
+        }
+
+        if (version == _loadVersion)
+        {
+            _page = page;
+            _loading = false;
+        }
+    }
+}

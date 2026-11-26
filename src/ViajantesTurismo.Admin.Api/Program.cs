@@ -13,6 +13,7 @@ using ViajantesTurismo.Admin.Api.Customers.Import;
 using ViajantesTurismo.Admin.Api.Documents;
 using ViajantesTurismo.Admin.Api.Payments;
 using ViajantesTurismo.Admin.Api.Errors;
+using ViajantesTurismo.Admin.Api.Operations;
 using ViajantesTurismo.Admin.Api.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -51,6 +52,8 @@ builder.Services.AddApiSecurity(
     .AddPolicy(AdminAuthorization.DocumentManage, policy => policy.RequirePermission(AdminAuthorization.DocumentManage))
     .AddPolicy(AdminAuthorization.DocumentHold, policy => policy.RequirePermission(AdminAuthorization.DocumentHold))
     .AddPolicy(AdminAuthorization.DocumentationRead, policy => policy.RequirePermission(AdminAuthorization.DocumentationRead))
+    .AddPolicy(AdminAuthorization.OperationsScheduleRead, policy => policy.RequirePermission(AdminAuthorization.OperationsScheduleRead))
+    .AddPolicy(AdminAuthorization.OperationsScheduleControl, policy => policy.RequirePermission(AdminAuthorization.OperationsScheduleControl))
     .AddPolicy(AdminAuthorization.PaymentManage, policy => policy.RequirePermission(AdminAuthorization.PaymentManage))
     .AddPolicy(AdminAuthorization.PaymentRead, policy => policy.RequirePermission(AdminAuthorization.PaymentRead))
     .AddPolicy(AdminAuthorization.PaymentWrite, policy => policy.RequirePermission(AdminAuthorization.PaymentWrite))
@@ -94,6 +97,7 @@ app.MapToursEndpoints();
 app.MapCustomerEndpoints();
 app.MapBookingEndpoints();
 app.MapDocumentEndpoints();
+app.MapDocumentMaintenanceEndpoints();
 app.MapDocumentHoldEndpoints();
 app.MapPaymentAccountEndpoints();
 app.MapBookingFinancialEndpoints();

@@ -1,0 +1,360 @@
+@using SharedKernel.AspNetCore.Authentication.Bff
+@inject IDocumentMaintenanceExecutionsApiClient ExecutionsApi
+@inject IDocumentMaintenanceControlApiClient ControlApi
+
+<section aria-label="Durable schedule" class="mb-4">
+    <h2 class="h5">Schedule</h2>
+    <dl class="mb-2">
+        <dt>Schedule state</dt>
+        <dd>@DocumentMaintenanceScheduleDisplay.ScheduleState(Schedule)</dd>
+        <dt>Next recurring due (UTC)</dt>
+        <dd>@Timestamp(Schedule.NextDueAtUtc)</dd>
+        <dt>Delay after a recurring execution</dt>
+        <dd>@(Schedule.FixedDelay?.ToString("c", CultureInfo.InvariantCulture) ?? "Unavailable")</dd>
+        <dt>Active execution</dt>
+        <dd>@(Schedule.ActiveRun is { } active ? $"Running since {Timestamp(active.StartedAtUtc)}" : "No active execution")</dd>
+        <dt>Latest execution</dt>
+        <dd>@(Schedule.LatestRun is { } latest ? $"{ExecutionStatus(latest.Status)} · started {Timestamp(latest.StartedAtUtc)}" : "No recorded execution")</dd>
+    </dl>
+    @if (Schedule.IsPaused is true)
+    {
+        <p>New executions wait while paused. A running execution can finish.</p>
+    }
+    else if (Schedule.IsPaused is null)
+    {
+        <p>The scheduler has yet to register this job.</p>
+    }
+    @if (Schedule.IsDue)
+    {
+        <p>The recurring execution is due and waiting for a worker.</p>
+    }
+    @if (Schedule.LatestRun?.Status == DocumentMaintenanceExecutionStatus.Unknown && Schedule.ActiveRun is null)
+    {
+        <p>The latest execution has neither a live lease nor a recorded outcome.</p>
+    }
+    @if (CanControl)
+    {
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @if (Schedule.IsPaused is true)
+            {
+                <button type="button" class="btn btn-outline-primary" disabled="@ControlsLocked"
+                        @onclick="() => Begin(DocumentMaintenanceControlKind.Resume)">Resume schedule</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-outline-primary" disabled="@ControlsLocked"
+                        @onclick="() => Begin(DocumentMaintenanceControlKind.Pause)">Pause schedule</button>
+            }
+            <button type="button" class="btn btn-outline-primary" disabled="@ControlsLocked"
+                    @onclick="() => Begin(DocumentMaintenanceControlKind.Trigger)">Queue a run</button>
+        </div>
+    }
+    @if (_feedback is not null)
+    {
+        <p role="status">@_feedback</p>
+    }
+    @if (_controlError is not null)
+    {
+        <p role="alert">@_controlError</p>
+    }
+    @if (CanControl && _action is { } action)
+    {
+        <fieldset class="border rounded p-3">
+            <legend class="h6">Confirm schedule control</legend>
+            <p>@ActionLabel(action) for @DocumentMaintenanceScheduleDisplay.JobTitle(Schedule.Job).</p>
+            @if (_failedRunId is { } failedRunId)
+            {
+                <p>Failed execution <code>@failedRunId</code></p>
+            }
+            @if (_submitted is null)
+            {
+                <label for="maintenance-control-reason" class="form-label">Reason</label>
+                <textarea id="maintenance-control-reason" class="form-control" rows="3"
+                          maxlength="@ContractConstants.MaxDocumentMaintenanceControlReasonLength" aria-describedby="maintenance-control-help"
+                          required @bind="_reason" @bind:event="oninput"></textarea>
+                <p id="maintenance-control-help" class="form-text">
+                    Use up to @ContractConstants.MaxDocumentMaintenanceControlReasonLength characters. The audit records this reason.
+                </p>
+            }
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-secondary" disabled="@_submitting" @onclick="Cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" disabled="@_submitting" @onclick="Confirm">
+                    @(_submitted is null ? "Confirm control" : "Resend same request")
+                </button>
+            </div>
+        </fieldset>
+    }
+</section>
+
+<section aria-label="Scheduler executions" class="mb-4">
+    <h2 class="h5">Scheduler executions</h2>
+    @if (_loadingExecutions)
+    {
+        <p role="status">Loading scheduler executions…</p>
+    }
+    else if (_executions is null)
+    {
+        <p role="alert">Scheduler executions are unavailable.</p>
+    }
+    else if (_executions.Executions.Count == 0)
+    {
+        <p>No recorded executions.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table" aria-label="Scheduler executions">
+                <thead>
+                    <tr>
+                        <th scope="col">Scheduled for (UTC)</th>
+                        <th scope="col">Started (UTC)</th>
+                        <th scope="col">Finished (UTC)</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Retry at (UTC)</th>
+                        @if (CanControl)
+                        {
+                            <th scope="col">Action</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in _executions.Executions)
+                    {
+                        <tr @key="run.RunId">
+                            <td>@Timestamp(run.ScheduledForUtc)</td>
+                            <td>@Timestamp(run.StartedAtUtc)</td>
+                            <td>@Timestamp(run.FinishedAtUtc)</td>
+                            <td>@ExecutionStatus(run.Status)</td>
+                            <td>@Timestamp(run.RetryAtUtc)</td>
+                            @if (CanControl)
+                            {
+                                <td>
+                                    @if (run.Status == DocumentMaintenanceExecutionStatus.Failed && run.RunId != Guid.Empty)
+                                    {
+                                        <button type="button" class="btn btn-outline-primary" disabled="@ControlsLocked"
+                                                aria-label="@($"Retry failed execution started {Timestamp(run.StartedAtUtc)}")"
+                                                @onclick="() => Begin(DocumentMaintenanceControlKind.Retry, run.RunId)">Retry</button>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <nav aria-label="Scheduler execution pages" class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-secondary" disabled="@(_loadingExecutions || (_executionBefore is null && _executions is not null))"
+                @onclick="ReadLatestExecutions">Latest executions</button>
+        <button type="button" class="btn btn-outline-secondary" disabled="@(_loadingExecutions || _executions?.Next is null)"
+                @onclick="ReadEarlierExecutions">Earlier executions</button>
+    </nav>
+</section>
+
+@code {
+    /// <summary>Gets or sets the persisted observations for the selected job.</summary>
+    [Parameter, EditorRequired]
+    public DocumentMaintenanceScheduleDto Schedule { get; set; } = null!;
+
+    /// <summary>Refreshes schedule status after the API resolves a control request.</summary>
+    [Parameter]
+    public EventCallback<DocumentMaintenanceJob> Changed { get; set; }
+
+    /// <summary>Gets or sets the current authenticated Management identity.</summary>
+    [CascadingParameter]
+    public Task<AuthenticationState>? Authentication { get; set; }
+
+    private DocumentMaintenanceJob? _loadedJob;
+    private GetDocumentMaintenanceExecutionsDto? _executions;
+    private DocumentMaintenanceExecutionCursorDto? _executionBefore;
+    private bool _loadingExecutions;
+    private bool _authorized;
+    private bool _denied;
+    private bool _submitting;
+    private DocumentMaintenanceControlKind? _action;
+    private Guid? _failedRunId;
+    private CreateDocumentMaintenanceControlDto? _submitted;
+    private string _reason = string.Empty;
+    private string? _feedback;
+    private string? _controlError;
+
+    private bool CanControl => _authorized && !_denied && Schedule.IsPaused.HasValue;
+    private bool ControlsLocked => _submitting || _action is not null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var user = Authentication is { } authentication ? (await authentication).User : null;
+        _authorized = user?.Identity?.IsAuthenticated == true && user.IsInRole(DocumentMaintenanceAccess.ControlRole);
+        if (!CanControl)
+        {
+            ClearIntent();
+        }
+
+        if (_loadedJob != Schedule.Job)
+        {
+            _loadedJob = Schedule.Job;
+            await ReadExecutions(null);
+        }
+    }
+
+    private Task ReadLatestExecutions() => ReadExecutions(null);
+
+    private Task ReadEarlierExecutions() => _executions?.Next is { } next ? ReadExecutions(next) : Task.CompletedTask;
+
+    private async Task ReadExecutions(DocumentMaintenanceExecutionCursorDto? before)
+    {
+        if (_loadingExecutions)
+        {
+            return;
+        }
+
+        _loadingExecutions = true;
+        _executionBefore = before;
+        try
+        {
+            var outcome = await ExecutionsApi.ReadExecutions(Schedule.Job, before, CancellationToken.None);
+            _executions = outcome.Kind == HttpOutcomeKind.Succeeded ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            _executions = null;
+        }
+        finally
+        {
+            _loadingExecutions = false;
+        }
+    }
+
+    private void Begin(DocumentMaintenanceControlKind action, Guid? failedRunId = null)
+    {
+        if (!CanControl || ControlsLocked)
+        {
+            return;
+        }
+
+        _action = action;
+        _failedRunId = failedRunId;
+        _feedback = null;
+        _controlError = null;
+    }
+
+    private void Cancel()
+    {
+        ClearIntent();
+        _controlError = null;
+    }
+
+    private void ClearIntent()
+    {
+        _action = null;
+        _failedRunId = null;
+        _reason = string.Empty;
+        _submitted = null;
+    }
+
+    private async Task Confirm()
+    {
+        if (!CanControl || _submitting || _action is not { } action)
+        {
+            return;
+        }
+
+        _controlError = null;
+        if (_submitted is null)
+        {
+            var reason = _reason.Trim();
+            if (reason.Length is 0 or > ContractConstants.MaxDocumentMaintenanceControlReasonLength || reason.Contains('\0', StringComparison.Ordinal))
+            {
+                _controlError = $"Enter a reason of up to {ContractConstants.MaxDocumentMaintenanceControlReasonLength} characters.";
+                return;
+            }
+
+            _submitted = new CreateDocumentMaintenanceControlDto
+            {
+                RequestId = Guid.CreateVersion7(),
+                Confirmed = true,
+                Reason = reason,
+                FailedRunId = _failedRunId,
+            };
+            _reason = string.Empty;
+        }
+
+        var job = Schedule.Job;
+        _submitting = true;
+        try
+        {
+            var result = await Apply(job, action, _submitted);
+            await RecordOutcome(job, action, result);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task<HttpOutcomeKind> Apply(DocumentMaintenanceJob job, DocumentMaintenanceControlKind action, CreateDocumentMaintenanceControlDto request)
+    {
+        try
+        {
+            var outcome = await ControlApi.Apply(job, action, request, CancellationToken.None);
+            return outcome.Kind;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            return HttpOutcomeKind.Unauthorized;
+        }
+    }
+
+    private async Task RecordOutcome(DocumentMaintenanceJob job, DocumentMaintenanceControlKind action, HttpOutcomeKind result)
+    {
+        switch (result)
+        {
+            case HttpOutcomeKind.Succeeded:
+                ClearIntent();
+                _feedback = AcceptedMessage(action);
+                await Changed.InvokeAsync(job);
+                await ReadExecutions(_executionBefore);
+                break;
+            case HttpOutcomeKind.Unauthorized or HttpOutcomeKind.Forbidden:
+                ClearIntent();
+                _denied = true;
+                _controlError = "Schedule control is unavailable for this session.";
+                break;
+            case HttpOutcomeKind.Conflict or HttpOutcomeKind.NotFound or HttpOutcomeKind.ValidationProblem:
+                ClearIntent();
+                _controlError = "The schedule could not accept this action. Review the current state before confirming again.";
+                await Changed.InvokeAsync(job);
+                await ReadExecutions(_executionBefore);
+                break;
+            default:
+                _controlError = "The request outcome is unknown. You can resend the same confirmed request.";
+                break;
+        }
+    }
+
+    private static string ActionLabel(DocumentMaintenanceControlKind action) => action switch
+    {
+        DocumentMaintenanceControlKind.Pause => "Pause schedule",
+        DocumentMaintenanceControlKind.Resume => "Resume schedule",
+        DocumentMaintenanceControlKind.Trigger => "Queue a run",
+        _ => "Retry failed execution",
+    };
+
+    private static string AcceptedMessage(DocumentMaintenanceControlKind action) => action switch
+    {
+        DocumentMaintenanceControlKind.Pause => "Pause request accepted.",
+        DocumentMaintenanceControlKind.Resume => "Resume request accepted.",
+        DocumentMaintenanceControlKind.Trigger => "Run queued. Queued executions wait while the schedule is paused.",
+        _ => "Retry queued. Queued executions wait while the schedule is paused.",
+    };
+
+    private static string ExecutionStatus(DocumentMaintenanceExecutionStatus status) => status switch
+    {
+        DocumentMaintenanceExecutionStatus.RetryScheduled => "Retry scheduled",
+        DocumentMaintenanceExecutionStatus.TerminalFailure => "Terminal failure",
+        DocumentMaintenanceExecutionStatus.Unknown => "Outcome unrecorded",
+        _ => status.ToString(),
+    };
+
+    private static string Timestamp(DateTimeOffset? value) => value?.UtcDateTime.ToString("u", CultureInfo.InvariantCulture) ?? "—";
+}

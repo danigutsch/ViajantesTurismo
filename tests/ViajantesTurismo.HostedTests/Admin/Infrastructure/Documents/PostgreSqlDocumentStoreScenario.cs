@@ -17,11 +17,14 @@ using SharedKernel.Idempotency.EntityFrameworkCore;
 using SharedKernel.IntegrationTesting;
 using SharedKernel.Mediator;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using SharedKernel.Results;
+using SharedKernel.Testing.Logging;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
+using ViajantesTurismo.Admin.Application.Documents.Maintenance;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -231,12 +234,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await store.Save(ct);
     }
 
-    private IHost CreateDocumentCommandHost(Action<IServiceCollection>? configure = null)
+    private IHost CreateDocumentCommandHost(Action<IServiceCollection>? configure = null, bool addRuntimeBackgroundServices = false) =>
+        CreateDocumentCommandHost(connectionString, configure, addRuntimeBackgroundServices);
+
+    private static IHost CreateDocumentCommandHost(
+        string databaseConnectionString, Action<IServiceCollection>? configure, bool addRuntimeBackgroundServices)
     {
         var builder = Host.CreateApplicationBuilder();
-        builder.Configuration[$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = connectionString;
+        builder.Configuration[$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = databaseConnectionString;
         builder.Services.AddSingleton(TimeProvider.System);
-        builder.AddInfrastructure(addRuntimeBackgroundServices: false).AddApplication();
+        builder.AddInfrastructure(addRuntimeBackgroundServices).AddApplication();
         configure?.Invoke(builder.Services);
         return builder.Build();
     }
@@ -857,6 +864,317 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await dbContext.DocumentRetentionPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
     }
 
+    /// <summary>Records synthetic completed runs independently of the hosted workers.</summary>
+    public async Task SeedMaintenanceEvidence(
+        IReadOnlyList<DocumentRetentionPurgeRecord> retentionRuns,
+        DocumentAuditPurgeRecord auditRun,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        dbContext.DocumentRetentionPurgeRecords.AddRange(retentionRuns);
+        dbContext.DocumentAuditPurgeRecords.Add(auditRun);
+        _ = await dbContext.SaveChangesAsync(ct);
+    }
+
+    /// <summary>Runs one batch for each registered document retention worker through the production sender.</summary>
+    public async Task RunRegisteredMaintenanceBatches(DateTimeOffset now, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost(services =>
+        {
+            services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
+            services.AddMediator();
+        }, addRuntimeBackgroundServices: true);
+        await using var scope = host.Services.CreateAsyncScope();
+        var drain = scope.ServiceProvider.GetRequiredService<DocumentMaintenanceDrain>();
+        foreach (var job in DocumentMaintenanceSchedule.Jobs)
+        {
+            _ = await drain.RunBatch(job, ct);
+        }
+    }
+
+    /// <summary>Starts the registered workers, then reads their committed history from an independent host.</summary>
+    public async Task<(DocumentMaintenanceHistoryDto History, GetDocumentMaintenanceTimelineDto DraftTimeline)> ReadMaintenanceAfterWorkerStartup(
+        DateTimeOffset now, CancellationToken ct)
+    {
+        await RunMaintenanceStartup(now,
+            static recorded => recorded.DraftRuns.Count >= 2 && recorded.AuditRuns.Count >= 1 && recorded.IdempotencyRuns.Count >= 1,
+            ct);
+
+        using var reader = CreateDocumentCommandHost(services => services.AddMediator(), addRuntimeBackgroundServices: false);
+        try
+        {
+            await reader.StartAsync(ct);
+            await using var scope = reader.Services.CreateAsyncScope();
+            var history = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceHistoryQuery>();
+            var timeline = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceTimelineQuery>();
+            return (await history.Read(ct), await timeline.Read(
+                DocumentMaintenanceJob.Drafts, ContractConstants.DefaultDocumentMaintenancePageSize, null, ct));
+        }
+        finally
+        {
+            await reader.StopAsync(CancellationToken.None);
+        }
+    }
+
+    /// <summary>Rejects or allows draft purge evidence inserts on this disposable database.</summary>
+    public async Task SetDraftEvidenceRejected(bool reject, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var statement = reject
+            ? """
+                ALTER TABLE "DocumentRetentionPurgeRecords" ADD CONSTRAINT "RejectDraftMaintenanceEvidence"
+                    CHECK ("Kind" <> 'Drafts') NOT VALID
+                """
+            : """ALTER TABLE "DocumentRetentionPurgeRecords" DROP CONSTRAINT "RejectDraftMaintenanceEvidence" """;
+        _ = await dbContext.Database.ExecuteSqlRawAsync(statement, ct);
+    }
+
+    /// <summary>Observes the real Scheduler's draft failure and the committed sibling history.</summary>
+    public async Task<(DocumentMaintenanceHistoryDto History, RecordedLog Failure)> ReadMaintenanceAfterDraftStartupFailure(
+        DateTimeOffset now, CancellationToken ct)
+    {
+        using var logger = new RecordingLoggerProvider();
+        await RunMaintenanceStartup(now, recorded => recorded.AuditRuns.Count >= 1 && recorded.IdempotencyRuns.Count >= 1
+            && logger.Records.Any(IsDraftSchedulerFailure), ct, logger, PostgreSqlScheduleRunStatus.Failed);
+        return (await ReadMaintenanceHistory(ct), logger.Records.Single(IsDraftSchedulerFailure));
+    }
+
+    private static bool IsDraftSchedulerFailure(RecordedLog record) =>
+        record.Level == LogLevel.Error
+        && record.EventId is { Id: 3012, Name: "MaintenanceSchedulerDrainFailed" }
+        && record.State.Any(tag => tag.Key == "JobName" && tag.Value is "admin-document-draft-retention");
+
+    private async Task RunMaintenanceStartup(
+        DateTimeOffset now, Func<DocumentMaintenanceHistoryDto, bool> completed, CancellationToken ct, ILoggerProvider? logger = null,
+        PostgreSqlScheduleRunStatus draftOutcome = PostgreSqlScheduleRunStatus.Succeeded)
+    {
+        using var workerHost = CreateDocumentCommandHost(services =>
+        {
+            services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
+            services.AddMediator();
+            if (logger is not null)
+            {
+                services.AddLogging(logging => logging.AddProvider(logger));
+            }
+        }, addRuntimeBackgroundServices: true);
+        using var startup = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        startup.CancelAfter(TimeSpan.FromSeconds(30));
+        try
+        {
+            await workerHost.StartAsync(startup.Token);
+            await using var scope = workerHost.Services.CreateAsyncScope();
+            var history = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceHistoryQuery>();
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(20));
+            do
+            {
+                var recorded = await history.Read(startup.Token);
+                if (completed(recorded))
+                {
+                    var scheduler = scope.ServiceProvider.GetRequiredService<PostgreSqlJobScheduler>();
+                    foreach (var job in DocumentMaintenanceSchedule.Jobs)
+                    {
+                        var outcome = job == DocumentMaintenanceJob.Drafts ? draftOutcome : PostgreSqlScheduleRunStatus.Succeeded;
+                        _ = await WaitForMaintenanceRun(scheduler, job, outcome, startup.Token);
+                    }
+
+                    return;
+                }
+            }
+            while (await timer.WaitForNextTickAsync(startup.Token));
+        }
+        finally
+        {
+            await workerHost.StopAsync(CancellationToken.None);
+        }
+    }
+
+    /// <summary>Reads the registered maintenance-history query in a fresh host against the existing database.</summary>
+    public async Task<DocumentMaintenanceHistoryDto> ReadMaintenanceHistory(CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost(services => services.AddMediator(), addRuntimeBackgroundServices: false);
+        await using var scope = host.Services.CreateAsyncScope();
+        var query = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceHistoryQuery>();
+        return await query.Read(ct);
+    }
+
+    /// <summary>Queues the persisted failed draft execution for retry through the audited application command.</summary>
+    internal async Task RetryFailedDraftMaintenance(CancellationToken ct)
+    {
+        await using var dataSource = CreateMaintenanceDataSource();
+        var scheduler = new PostgreSqlJobScheduler(dataSource, DocumentMaintenanceSchedule.DurableSchema);
+        var failed = await WaitForMaintenanceRun(scheduler, DocumentMaintenanceJob.Drafts, PostgreSqlScheduleRunStatus.Failed, ct);
+        var retry = new ControlDocumentMaintenanceCommand(
+            DocumentMaintenanceJob.Drafts,
+            DocumentMaintenanceControlAction.Retry,
+            new CreateDocumentMaintenanceControlDto
+            {
+                RequestId = Guid.CreateVersion7(),
+                Confirmed = true,
+                Reason = "Synthetic maintenance recovery.",
+                FailedRunId = failed.RunId,
+            },
+            "synthetic-maintenance-operator");
+        var result = await ControlMaintenance(retry, ct);
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException("The app did not accept the draft maintenance retry.");
+        }
+    }
+
+    /// <summary>Registers a test schedule far enough in the future to isolate an operator control.</summary>
+    public async Task RegisterMaintenanceSchedule(DocumentMaintenanceJob job, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost();
+        var scheduler = host.Services.GetRequiredService<PostgreSqlJobScheduler>();
+        await scheduler.Register(DocumentMaintenanceSchedule.GetJobName(job), TimeProvider.System.GetUtcNow().AddDays(4),
+            DocumentMaintenanceSchedule.FixedDelay, ct);
+    }
+
+    /// <summary>Creates the actual scheduler host with time to exercise a held-draft heartbeat.</summary>
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The returned test host owns and disposes the underlying IHost.")]
+    internal DurableDocumentMaintenanceTestHost CreateDurableMaintenanceHost()
+    {
+        var settings = new NpgsqlConnectionStringBuilder(connectionString) { CommandTimeout = 90 };
+        return new DurableDocumentMaintenanceTestHost(CreateDocumentCommandHost(
+            settings.ConnectionString, services => services.AddMediator(), addRuntimeBackgroundServices: true));
+    }
+
+    /// <summary>Creates a separately owned connection pool to inspect runtime work.</summary>
+    internal NpgsqlDataSource CreateMaintenanceDataSource() => NpgsqlDataSource.Create(connectionString);
+
+    /// <summary>Waits for one execution state using a separate scheduler reader.</summary>
+    internal static Task<PostgreSqlScheduleRun> WaitForMaintenanceRun(
+        PostgreSqlJobScheduler scheduler, DocumentMaintenanceJob job, PostgreSqlScheduleRunStatus status, CancellationToken ct) =>
+        WaitForMaintenanceRun(scheduler, DocumentMaintenanceSchedule.GetJobName(job), status, ct);
+
+    /// <summary>Waits for a named job to reach the requested execution state.</summary>
+    internal static async Task<PostgreSqlScheduleRun> WaitForMaintenanceRun(
+        PostgreSqlJobScheduler scheduler, string jobName, PostgreSqlScheduleRunStatus status, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(35));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(50));
+        do
+        {
+            var page = await scheduler.ReadHistory(jobName, null, 1, timeout.Token);
+            if (page.Runs is [{ Status: var current } run] && current == status)
+            {
+                return run;
+            }
+        }
+        while (await timer.WaitForNextTickAsync(timeout.Token));
+
+        throw new InvalidOperationException("The expected maintenance state was not observed.");
+    }
+
+    /// <summary>Moves an owned test execution beyond its database-clock lease expiry.</summary>
+    internal static async Task<int> ExpireMaintenanceLease(NpgsqlDataSource dataSource, Guid runId, CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand("""
+            UPDATE document_maintenance.scheduler_executions
+            SET observed_until = pg_catalog.statement_timestamp() - interval '1 second'
+            WHERE run_id = $1
+            """);
+        command.Parameters.Add(new NpgsqlParameter<Guid> { TypedValue = runId });
+        return await command.ExecuteNonQueryAsync(ct);
+    }
+
+    /// <summary>Reads the database-clock expiry of the test execution.</summary>
+    internal static async Task<DateTimeOffset> ReadMaintenanceLeaseDeadline(
+        NpgsqlDataSource dataSource, Guid runId, CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand(
+            "SELECT observed_until FROM document_maintenance.scheduler_executions WHERE run_id = $1");
+        command.Parameters.Add(new NpgsqlParameter<Guid> { TypedValue = runId });
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct))
+        {
+            throw new InvalidOperationException("The maintenance test execution is absent.");
+        }
+
+        return await reader.GetFieldValueAsync<DateTimeOffset>(0, ct);
+    }
+
+    /// <summary>Waits for the real durable worker to extend its database-clock lease.</summary>
+    internal static async Task<DateTimeOffset> WaitForMaintenanceLeaseRenewal(
+        NpgsqlDataSource dataSource, Guid runId, DateTimeOffset initialDeadline, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(40));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+        do
+        {
+            var deadline = await ReadMaintenanceLeaseDeadline(dataSource, runId, timeout.Token);
+            if (deadline > initialDeadline)
+            {
+                return deadline;
+            }
+        }
+        while (await timer.WaitForNextTickAsync(timeout.Token));
+
+        throw new InvalidOperationException("The durable maintenance lease was not renewed.");
+    }
+
+    /// <summary>Dispatches a control through the production Admin mediator and transaction behavior.</summary>
+    public Task<Result> ControlMaintenance(ControlDocumentMaintenanceCommand command, CancellationToken ct) =>
+        ControlMaintenanceAt(connectionString, command, ct);
+
+    /// <summary>Dispatches the production control under the requested disposable runtime login.</summary>
+    internal static async Task<Result> ControlMaintenanceAt(
+        string databaseConnectionString, ControlDocumentMaintenanceCommand command, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost(databaseConnectionString, services => services.AddMediator(),
+            addRuntimeBackgroundServices: false);
+        await using var scope = host.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<ISender>().Send(command, ct);
+    }
+
+    /// <summary>Reads the durable schedule and its private audit from separate connections.</summary>
+    public async Task<(PostgreSqlJobSchedule Schedule, DocumentMaintenanceControlAudit[] Audit)> ReadMaintenanceControl(
+        DocumentMaintenanceJob job, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost();
+        var scheduler = host.Services.GetRequiredService<PostgreSqlJobScheduler>();
+        var schedule = await scheduler.ReadJob(DocumentMaintenanceSchedule.GetJobName(job), ct);
+        await using var dbContext = CreateDbContext();
+        var audit = await dbContext.Set<DocumentMaintenanceControlAudit>().AsNoTracking()
+            .Where(record => record.Job == job).ToArrayAsync(ct);
+        return (schedule ?? throw new InvalidOperationException("The test schedule was not registered."), audit);
+    }
+
+    /// <summary>Rejects or allows inserts into the private audit table in this test database.</summary>
+    public async Task SetMaintenanceControlAuditRejected(bool reject, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var sql = reject
+            ? """ALTER TABLE "document_maintenance".control_audit ADD CONSTRAINT reject_test_control CHECK (false) NOT VALID """
+            : """ALTER TABLE "document_maintenance".control_audit DROP CONSTRAINT reject_test_control """;
+        _ = await dbContext.Database.ExecuteSqlRawAsync(sql, ct);
+    }
+
+    /// <summary>Reads one job's retained batches through the production Operations query.</summary>
+    public async Task<GetDocumentMaintenanceTimelineDto> ReadMaintenanceTimeline(
+        DocumentMaintenanceJob job, int pageSize, DocumentMaintenanceRunCursorDto? before, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost(services => services.AddMediator(), addRuntimeBackgroundServices: false);
+        await using var scope = host.Services.CreateAsyncScope();
+        var query = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceTimelineQuery>();
+        return await query.Read(job, pageSize, before, ct);
+    }
+
+    /// <summary>Reads a job's persisted scheduler executions through the registered Operations query.</summary>
+    internal async Task<GetDocumentMaintenanceExecutionsDto> ReadMaintenanceExecutions(
+        DocumentMaintenanceJob job, int pageSize, DocumentMaintenanceExecutionCursorDto? before, CancellationToken ct)
+    {
+        using var host = CreateDocumentCommandHost(services => services.AddMediator(), addRuntimeBackgroundServices: false);
+        await using var scope = host.Services.CreateAsyncScope();
+        var query = scope.ServiceProvider.GetRequiredService<IDocumentMaintenanceExecutionsQuery>();
+        return await query.ReadExecutions(job, pageSize, before, ct);
+    }
+
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>
     public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
     {
@@ -1004,15 +1322,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     }
 
     /// <summary>Waits until a session of the scenario database is blocked waiting for a lock.</summary>
-    public async Task WaitForBlockedSession(CancellationToken ct)
+    public Task WaitForBlockedSession(CancellationToken ct) => WaitForSessionLockState(blocked: true, ct);
+
+    /// <summary>Waits until the worker has cancelled its blocked database command.</summary>
+    internal Task WaitForUnblockedSessions(CancellationToken ct) => WaitForSessionLockState(blocked: false, ct);
+
+    private async Task WaitForSessionLockState(bool blocked, CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        timeout.CancelAfter(TimeSpan.FromSeconds(blocked ? 30 : 40));
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(20));
         do
         {
             await using var dbContext = CreateDbContext();
-            var blocked = await dbContext.Database
+            var hasBlockedSession = await dbContext.Database
                 .SqlQueryRaw<bool>(
                     """
                     SELECT EXISTS (
@@ -1021,7 +1344,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                           AND wait_event_type = 'Lock') AS "Value"
                     """)
                 .SingleAsync(timeout.Token);
-            if (blocked)
+            if (hasBlockedSession == blocked)
             {
                 return;
             }

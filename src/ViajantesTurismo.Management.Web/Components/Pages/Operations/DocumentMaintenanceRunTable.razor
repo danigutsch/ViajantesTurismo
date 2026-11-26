@@ -1,0 +1,41 @@
+<section>
+    <h2 class="h5">@Title</h2>
+    @if (Runs.Count == 0)
+    {
+        <p>No recorded batches.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table" aria-label="@Title">
+                <thead>
+                    <tr>
+                        <th scope="col">Recorded at (UTC)</th>
+                        <th scope="col">Outcome</th>
+                        <th scope="col">Removed</th>
+                        <th scope="col">Held</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in Runs)
+                    {
+                        <tr>
+                            <td><time datetime="@run.OccurredAtUtc.ToString("O", CultureInfo.InvariantCulture)">@run.OccurredAtUtc.ToString("u", CultureInfo.InvariantCulture)</time></td>
+                            <td>@run.Outcome</td>
+                            <td>@run.PurgedCount</td>
+                            <td>@run.HeldCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<DocumentMaintenanceRunDto> Runs { get; set; } = [];
+}

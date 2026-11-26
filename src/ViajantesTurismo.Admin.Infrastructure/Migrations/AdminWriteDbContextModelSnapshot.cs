@@ -614,12 +614,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("DocumentLineageId", "Revision")
                         .IsUnique()
                         .HasDatabaseName("UX_DocumentDrafts_DocumentLineageId_Revision")
-                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
+                        .HasAnnotation("SharedKernel:UniqueRule", "document.revision");
 
                     b.HasIndex("BookingId", "Type", "Revision")
                         .IsUnique()
                         .HasDatabaseName("UX_DocumentDrafts_BookingId_Type_Revision")
-                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
+                        .HasAnnotation("SharedKernel:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentDrafts");
                 });
@@ -655,7 +655,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("BookingId", "Type")
                         .IsUnique()
                         .HasDatabaseName("UX_DocumentLineages_BookingId_Type")
-                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
+                        .HasAnnotation("SharedKernel:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentLineages");
                 });
@@ -992,6 +992,39 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("recovery", "branding_projection");
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Documents.DocumentMaintenanceControlAudit", b =>
+                {
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("FailedRunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Job")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RequestId");
+
+                    b.ToTable("control_audit", "document_maintenance");
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Payments.PaymentAccountRow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1209,7 +1242,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                             b1.HasIndex("Email")
                                 .IsUnique()
                                 .HasDatabaseName("UX_CustomerContactInfo_Email")
-                                .HasAnnotation("PandaBear:UniqueRule", "customer.email");
+                                .HasAnnotation("SharedKernel:UniqueRule", "customer.email");
 
                             b1.ToTable("CustomerContactInfo", (string)null);
 

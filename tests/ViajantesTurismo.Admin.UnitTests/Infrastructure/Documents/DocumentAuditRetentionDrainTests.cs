@@ -4,14 +4,14 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
 [TestFocus(TestFocus.CoreBehavior)]
 [Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
-public sealed class DocumentAuditRetentionHostedServiceTests
+public sealed class DocumentAuditRetentionDrainTests
 {
     [Fact]
     public async Task RunBatch_purges_expired_audit_records_through_the_generated_mediator()
     {
         // Arrange
         var now = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
-        await using var fixture = DocumentAuditRetentionHostedServiceFixture.Create(now, 2);
+        await using var fixture = DocumentAuditRetentionDrainFixture.Create(now, 2);
 
         // Act
         var removedCount = await fixture.RunBatch(TestContext.Current.CancellationToken);

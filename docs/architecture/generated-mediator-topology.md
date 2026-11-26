@@ -252,537 +252,550 @@ flowchart LR
     mediator_228 --> mediator_230
     mediator_232["ViajantesTurismo.Admin.Application.Documents.Holds.ReleaseDocumentHoldCommandHandler"]
     mediator_230 --> mediator_232
-    mediator_234["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand"]
-    mediator_235["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_234["command-with-response ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand"]
+    mediator_235["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand, SharedKernel.Results.Result#62;"]
     mediator_234 --> mediator_235
-    mediator_237["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_237["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand, SharedKernel.Results.Result#62;"]
     mediator_235 --> mediator_237
-    mediator_239["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommandHandler"]
+    mediator_239["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand, SharedKernel.Results.Result#62;"]
     mediator_237 --> mediator_239
-    mediator_241["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand"]
-    mediator_242["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
-    mediator_241 --> mediator_242
-    mediator_244["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
-    mediator_242 --> mediator_244
-    mediator_246["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommandHandler"]
-    mediator_244 --> mediator_246
-    mediator_248["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand"]
-    mediator_249["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
-    mediator_248 --> mediator_249
-    mediator_251["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
-    mediator_249 --> mediator_251
-    mediator_253["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommandHandler"]
-    mediator_251 --> mediator_253
-    mediator_255["command-with-response ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand"]
-    mediator_256["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_255 --> mediator_256
-    mediator_258["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_256 --> mediator_258
-    mediator_260["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_258 --> mediator_260
-    mediator_262["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_260 --> mediator_262
-    mediator_264["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_241["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand, SharedKernel.Results.Result#62;"]
+    mediator_239 --> mediator_241
+    mediator_243["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommand, SharedKernel.Results.Result#62;"]
+    mediator_241 --> mediator_243
+    mediator_245["ViajantesTurismo.Admin.Application.Documents.Maintenance.ControlDocumentMaintenanceCommandHandler"]
+    mediator_243 --> mediator_245
+    mediator_247["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand"]
+    mediator_248["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_247 --> mediator_248
+    mediator_250["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_248 --> mediator_250
+    mediator_252["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentAuditsCommandHandler"]
+    mediator_250 --> mediator_252
+    mediator_254["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand"]
+    mediator_255["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_254 --> mediator_255
+    mediator_257["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_255 --> mediator_257
+    mediator_259["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDocumentIdempotencyEntriesCommandHandler"]
+    mediator_257 --> mediator_259
+    mediator_261["command-with-response ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand"]
+    mediator_262["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
+    mediator_261 --> mediator_262
+    mediator_264["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommand, ViajantesTurismo.Admin.Domain.Documents.DocumentPurgeCounts#62;"]
     mediator_262 --> mediator_264
-    mediator_266["ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommandHandler"]
+    mediator_266["ViajantesTurismo.Admin.Application.Documents.PurgeExpiredDraftsCommandHandler"]
     mediator_264 --> mediator_266
-    mediator_268["command-with-response ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand"]
-    mediator_269["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
+    mediator_268["command-with-response ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand"]
+    mediator_269["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_268 --> mediator_269
-    mediator_271["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
+    mediator_271["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_269 --> mediator_271
-    mediator_273["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
+    mediator_273["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_271 --> mediator_273
-    mediator_275["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
+    mediator_275["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_273 --> mediator_275
-    mediator_277["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
+    mediator_277["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_275 --> mediator_277
-    mediator_279["ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommandHandler"]
+    mediator_279["ViajantesTurismo.Admin.Application.Documents.RegenerateDocumentDraftCommandHandler"]
     mediator_277 --> mediator_279
-    mediator_281["command-with-response ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand"]
-    mediator_282["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
+    mediator_281["command-with-response ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand"]
+    mediator_282["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
     mediator_281 --> mediator_282
-    mediator_284["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
+    mediator_284["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
     mediator_282 --> mediator_284
-    mediator_286["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
+    mediator_286["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
     mediator_284 --> mediator_286
-    mediator_288["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
+    mediator_288["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
     mediator_286 --> mediator_288
-    mediator_290["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
+    mediator_290["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommand, SharedKernel.Results.Result#62;"]
     mediator_288 --> mediator_290
-    mediator_292["ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommandHandler"]
+    mediator_292["ViajantesTurismo.Admin.Application.Documents.RequestDocumentChangesCommandHandler"]
     mediator_290 --> mediator_292
-    mediator_294["command-with-response ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand"]
-    mediator_295["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
+    mediator_294["command-with-response ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand"]
+    mediator_295["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
     mediator_294 --> mediator_295
-    mediator_297["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
+    mediator_297["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
     mediator_295 --> mediator_297
-    mediator_299["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
+    mediator_299["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
     mediator_297 --> mediator_299
-    mediator_301["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
+    mediator_301["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
     mediator_299 --> mediator_301
-    mediator_303["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
+    mediator_303["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommand, SharedKernel.Results.Result#62;"]
     mediator_301 --> mediator_303
-    mediator_305["ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommandHandler"]
+    mediator_305["ViajantesTurismo.Admin.Application.Documents.UpdateDocumentFieldCommandHandler"]
     mediator_303 --> mediator_305
-    mediator_307["command-with-response ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand"]
-    mediator_308["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_307["command-with-response ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand"]
+    mediator_308["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
     mediator_307 --> mediator_308
-    mediator_310["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_310["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
     mediator_308 --> mediator_310
-    mediator_312["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_312["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
     mediator_310 --> mediator_312
-    mediator_314["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_314["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
     mediator_312 --> mediator_314
-    mediator_316["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_316["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommand, SharedKernel.Results.Result#62;"]
     mediator_314 --> mediator_316
-    mediator_318["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_318["ViajantesTurismo.Admin.Application.Documents.VoidDocumentCommandHandler"]
     mediator_316 --> mediator_318
-    mediator_320["ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommandHandler"]
-    mediator_318 --> mediator_320
-    mediator_322["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand"]
-    mediator_323["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_322 --> mediator_323
-    mediator_325["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_320["command-with-response ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand"]
+    mediator_321["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_320 --> mediator_321
+    mediator_323["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_321 --> mediator_323
+    mediator_325["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_323 --> mediator_325
-    mediator_327["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_327["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_325 --> mediator_327
-    mediator_329["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_329["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_327 --> mediator_329
-    mediator_331["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_331["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_329 --> mediator_331
-    mediator_333["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_333["ViajantesTurismo.Admin.Application.Payments.AllocateBookingPaymentCommandHandler"]
     mediator_331 --> mediator_333
-    mediator_335["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommandHandler"]
-    mediator_333 --> mediator_335
-    mediator_337["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand"]
-    mediator_338["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_337 --> mediator_338
-    mediator_340["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_335["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand"]
+    mediator_336["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_335 --> mediator_336
+    mediator_338["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_336 --> mediator_338
+    mediator_340["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_338 --> mediator_340
-    mediator_342["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_342["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_340 --> mediator_342
-    mediator_344["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_344["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_342 --> mediator_344
-    mediator_346["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_346["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_344 --> mediator_346
-    mediator_348["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_348["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentQuoteCommandHandler"]
     mediator_346 --> mediator_348
-    mediator_350["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommandHandler"]
-    mediator_348 --> mediator_350
-    mediator_352["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand"]
-    mediator_353["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_352 --> mediator_353
-    mediator_355["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_350["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand"]
+    mediator_351["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_350 --> mediator_351
+    mediator_353["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_351 --> mediator_353
+    mediator_355["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_353 --> mediator_355
-    mediator_357["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_357["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_355 --> mediator_357
-    mediator_359["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_359["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_357 --> mediator_359
-    mediator_361["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_361["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_359 --> mediator_361
-    mediator_363["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_363["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentRefundCommandHandler"]
     mediator_361 --> mediator_363
-    mediator_365["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommandHandler"]
-    mediator_363 --> mediator_365
-    mediator_367["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand"]
-    mediator_368["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_367 --> mediator_368
-    mediator_370["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_365["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand"]
+    mediator_366["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_365 --> mediator_366
+    mediator_368["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_366 --> mediator_368
+    mediator_370["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_368 --> mediator_370
-    mediator_372["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_372["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_370 --> mediator_372
-    mediator_374["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_374["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_372 --> mediator_374
-    mediator_376["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_376["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_374 --> mediator_376
-    mediator_378["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_378["ViajantesTurismo.Admin.Application.Payments.ApproveBookingPaymentScheduleCommandHandler"]
     mediator_376 --> mediator_378
-    mediator_380["ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommandHandler"]
-    mediator_378 --> mediator_380
-    mediator_382["command-with-response ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand"]
-    mediator_383["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_382 --> mediator_383
-    mediator_385["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_380["command-with-response ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand"]
+    mediator_381["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_380 --> mediator_381
+    mediator_383["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_381 --> mediator_383
+    mediator_385["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_383 --> mediator_385
-    mediator_387["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_387["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_385 --> mediator_387
-    mediator_389["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_389["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_387 --> mediator_389
-    mediator_391["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_391["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_389 --> mediator_391
-    mediator_393["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_393["ViajantesTurismo.Admin.Application.Payments.ApproveBookingReceiptReconciliationCommandHandler"]
     mediator_391 --> mediator_393
-    mediator_395["ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommandHandler"]
-    mediator_393 --> mediator_395
-    mediator_397["command-with-response ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand"]
-    mediator_398["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_397 --> mediator_398
-    mediator_400["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_395["command-with-response ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand"]
+    mediator_396["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_395 --> mediator_396
+    mediator_398["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_396 --> mediator_398
+    mediator_400["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_398 --> mediator_400
-    mediator_402["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_402["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_400 --> mediator_402
-    mediator_404["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_404["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_402 --> mediator_404
-    mediator_406["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_406["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_404 --> mediator_406
-    mediator_408["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_408["ViajantesTurismo.Admin.Application.Payments.ApprovePaymentInstructionsCommandHandler"]
     mediator_406 --> mediator_408
-    mediator_410["ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommandHandler"]
-    mediator_408 --> mediator_410
-    mediator_412["command-with-response ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand"]
-    mediator_413["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_412 --> mediator_413
-    mediator_415["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_410["command-with-response ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand"]
+    mediator_411["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_410 --> mediator_411
+    mediator_413["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_411 --> mediator_413
+    mediator_415["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_413 --> mediator_415
-    mediator_417["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_417["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_415 --> mediator_417
-    mediator_419["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_419["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_417 --> mediator_419
-    mediator_421["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_421["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_419 --> mediator_421
-    mediator_423["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_423["ViajantesTurismo.Admin.Application.Payments.CorrectBookingPaymentRefundCommandHandler"]
     mediator_421 --> mediator_423
-    mediator_425["ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommandHandler"]
-    mediator_423 --> mediator_425
-    mediator_427["command-with-response ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand"]
-    mediator_428["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
-    mediator_427 --> mediator_428
-    mediator_430["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_425["command-with-response ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand"]
+    mediator_426["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_425 --> mediator_426
+    mediator_428["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_426 --> mediator_428
+    mediator_430["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_428 --> mediator_430
-    mediator_432["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_432["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_430 --> mediator_432
-    mediator_434["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_434["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_432 --> mediator_434
-    mediator_436["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_436["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_434 --> mediator_436
-    mediator_438["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_438["ViajantesTurismo.Admin.Application.Payments.CreatePaymentAccountCommandHandler"]
     mediator_436 --> mediator_438
-    mediator_440["ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommandHandler"]
-    mediator_438 --> mediator_440
-    mediator_442["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand"]
-    mediator_443["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_442 --> mediator_443
-    mediator_445["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_440["command-with-response ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand"]
+    mediator_441["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_440 --> mediator_441
+    mediator_443["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
+    mediator_441 --> mediator_443
+    mediator_445["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
     mediator_443 --> mediator_445
-    mediator_447["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_447["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
     mediator_445 --> mediator_447
-    mediator_449["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_449["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
     mediator_447 --> mediator_449
-    mediator_451["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_451["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommand, SharedKernel.Results.Result#60;ViajantesTurismo.Admin.Application.Documents.FinalizedDocumentArtifact#62;#62;"]
     mediator_449 --> mediator_451
-    mediator_453["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_453["ViajantesTurismo.Admin.Application.Payments.DownloadPaymentInstructionsCommandHandler"]
     mediator_451 --> mediator_453
-    mediator_455["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommandHandler"]
-    mediator_453 --> mediator_455
-    mediator_457["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand"]
-    mediator_458["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_457 --> mediator_458
-    mediator_460["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_455["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand"]
+    mediator_456["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_455 --> mediator_456
+    mediator_458["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_456 --> mediator_458
+    mediator_460["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_458 --> mediator_460
-    mediator_462["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_462["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_460 --> mediator_462
-    mediator_464["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_464["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_462 --> mediator_464
-    mediator_466["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_466["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_464 --> mediator_466
-    mediator_468["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_468["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentQuoteCommandHandler"]
     mediator_466 --> mediator_468
-    mediator_470["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommandHandler"]
-    mediator_468 --> mediator_470
-    mediator_472["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand"]
-    mediator_473["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_472 --> mediator_473
-    mediator_475["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_470["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand"]
+    mediator_471["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_470 --> mediator_471
+    mediator_473["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_471 --> mediator_473
+    mediator_475["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_473 --> mediator_475
-    mediator_477["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_477["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_475 --> mediator_477
-    mediator_479["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_479["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_477 --> mediator_479
-    mediator_481["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_481["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_479 --> mediator_481
-    mediator_483["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_483["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentRefundCommandHandler"]
     mediator_481 --> mediator_483
-    mediator_485["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommandHandler"]
-    mediator_483 --> mediator_485
-    mediator_487["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand"]
-    mediator_488["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_487 --> mediator_488
-    mediator_490["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_485["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand"]
+    mediator_486["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_485 --> mediator_486
+    mediator_488["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_486 --> mediator_488
+    mediator_490["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_488 --> mediator_490
-    mediator_492["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_492["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_490 --> mediator_492
-    mediator_494["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_494["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_492 --> mediator_494
-    mediator_496["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_496["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_494 --> mediator_496
-    mediator_498["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_498["ViajantesTurismo.Admin.Application.Payments.DraftBookingPaymentScheduleCommandHandler"]
     mediator_496 --> mediator_498
-    mediator_500["ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommandHandler"]
-    mediator_498 --> mediator_500
-    mediator_502["command-with-response ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand"]
-    mediator_503["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_502 --> mediator_503
-    mediator_505["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_500["command-with-response ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand"]
+    mediator_501["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_500 --> mediator_501
+    mediator_503["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_501 --> mediator_503
+    mediator_505["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_503 --> mediator_505
-    mediator_507["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_507["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_505 --> mediator_507
-    mediator_509["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_509["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_507 --> mediator_509
-    mediator_511["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_511["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_509 --> mediator_511
-    mediator_513["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_513["ViajantesTurismo.Admin.Application.Payments.DraftBookingReceiptReconciliationCommandHandler"]
     mediator_511 --> mediator_513
-    mediator_515["ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommandHandler"]
-    mediator_513 --> mediator_515
-    mediator_517["command-with-response ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand"]
-    mediator_518["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_517 --> mediator_518
-    mediator_520["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_515["command-with-response ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand"]
+    mediator_516["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_515 --> mediator_516
+    mediator_518["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_516 --> mediator_518
+    mediator_520["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_518 --> mediator_520
-    mediator_522["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_522["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_520 --> mediator_522
-    mediator_524["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_524["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_522 --> mediator_524
-    mediator_526["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_526["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_524 --> mediator_526
-    mediator_528["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_528["ViajantesTurismo.Admin.Application.Payments.FinalizePaymentInstructionsCommandHandler"]
     mediator_526 --> mediator_528
-    mediator_530["ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommandHandler"]
-    mediator_528 --> mediator_530
-    mediator_532["command-with-response ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand"]
-    mediator_533["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_532 --> mediator_533
-    mediator_535["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_530["command-with-response ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand"]
+    mediator_531["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_530 --> mediator_531
+    mediator_533["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_531 --> mediator_533
+    mediator_535["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_533 --> mediator_535
-    mediator_537["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_537["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_535 --> mediator_537
-    mediator_539["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_539["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_537 --> mediator_539
-    mediator_541["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_541["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_539 --> mediator_541
-    mediator_543["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_543["ViajantesTurismo.Admin.Application.Payments.GeneratePaymentInstructionsCommandHandler"]
     mediator_541 --> mediator_543
-    mediator_545["ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommandHandler"]
-    mediator_543 --> mediator_545
-    mediator_547["command-with-response ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand"]
-    mediator_548["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_547 --> mediator_548
-    mediator_550["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_545["command-with-response ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand"]
+    mediator_546["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_545 --> mediator_546
+    mediator_548["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_546 --> mediator_548
+    mediator_550["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_548 --> mediator_550
-    mediator_552["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_552["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_550 --> mediator_552
-    mediator_554["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_554["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_552 --> mediator_554
-    mediator_556["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_556["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_554 --> mediator_556
-    mediator_558["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_558["ViajantesTurismo.Admin.Application.Payments.RecordBookingReceiptCommandHandler"]
     mediator_556 --> mediator_558
-    mediator_560["ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommandHandler"]
-    mediator_558 --> mediator_560
-    mediator_562["command-with-response ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand"]
-    mediator_563["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_562 --> mediator_563
-    mediator_565["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_560["command-with-response ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand"]
+    mediator_561["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_560 --> mediator_561
+    mediator_563["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_561 --> mediator_563
+    mediator_565["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_563 --> mediator_565
-    mediator_567["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_567["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_565 --> mediator_567
-    mediator_569["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_569["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_567 --> mediator_569
-    mediator_571["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_571["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_569 --> mediator_571
-    mediator_573["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_573["ViajantesTurismo.Admin.Application.Payments.ReleaseBookingPaymentAllocationsCommandHandler"]
     mediator_571 --> mediator_573
-    mediator_575["ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommandHandler"]
-    mediator_573 --> mediator_575
-    mediator_577["command-with-response ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand"]
-    mediator_578["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_577 --> mediator_578
-    mediator_580["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_575["command-with-response ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand"]
+    mediator_576["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_575 --> mediator_576
+    mediator_578["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_576 --> mediator_578
+    mediator_580["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_578 --> mediator_580
-    mediator_582["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_582["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_580 --> mediator_582
-    mediator_584["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_584["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_582 --> mediator_584
-    mediator_586["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_586["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_584 --> mediator_586
-    mediator_588["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_588["ViajantesTurismo.Admin.Application.Payments.RetirePaymentAccountCommandHandler"]
     mediator_586 --> mediator_588
-    mediator_590["ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommandHandler"]
-    mediator_588 --> mediator_590
-    mediator_592["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand"]
-    mediator_593["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_592 --> mediator_593
-    mediator_595["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_590["command-with-response ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand"]
+    mediator_591["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_590 --> mediator_591
+    mediator_593["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_591 --> mediator_593
+    mediator_595["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_593 --> mediator_595
-    mediator_597["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_597["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_595 --> mediator_597
-    mediator_599["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_599["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_597 --> mediator_599
-    mediator_601["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_601["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_599 --> mediator_601
-    mediator_603["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_603["ViajantesTurismo.Admin.Application.Payments.ReverseBookingReceiptCommandHandler"]
     mediator_601 --> mediator_603
-    mediator_605["ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommandHandler"]
-    mediator_603 --> mediator_605
-    mediator_607["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand"]
-    mediator_608["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_607 --> mediator_608
-    mediator_610["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_605["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand"]
+    mediator_606["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_605 --> mediator_606
+    mediator_608["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_606 --> mediator_608
+    mediator_610["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_608 --> mediator_610
-    mediator_612["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_612["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_610 --> mediator_612
-    mediator_614["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_614["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_612 --> mediator_614
-    mediator_616["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_616["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_614 --> mediator_616
-    mediator_618["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_618["ViajantesTurismo.Admin.Application.Payments.ReviewBookingFinancialRecordCommandHandler"]
     mediator_616 --> mediator_618
-    mediator_620["ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommandHandler"]
-    mediator_618 --> mediator_620
-    mediator_622["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand"]
-    mediator_623["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_622 --> mediator_623
-    mediator_625["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_620["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand"]
+    mediator_621["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_620 --> mediator_621
+    mediator_623["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_621 --> mediator_623
+    mediator_625["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_623 --> mediator_625
-    mediator_627["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_627["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_625 --> mediator_627
-    mediator_629["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_629["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_627 --> mediator_629
-    mediator_631["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_631["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_629 --> mediator_631
-    mediator_633["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_633["ViajantesTurismo.Admin.Application.Payments.ReviewPaymentAccountCommandHandler"]
     mediator_631 --> mediator_633
-    mediator_635["ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommandHandler"]
-    mediator_633 --> mediator_635
-    mediator_637["command-with-response ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand"]
-    mediator_638["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_637 --> mediator_638
-    mediator_640["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_635["command-with-response ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand"]
+    mediator_636["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_635 --> mediator_636
+    mediator_638["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_636 --> mediator_638
+    mediator_640["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_638 --> mediator_640
-    mediator_642["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_642["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_640 --> mediator_642
-    mediator_644["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_644["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_642 --> mediator_644
-    mediator_646["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_646["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_644 --> mediator_646
-    mediator_648["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_648["ViajantesTurismo.Admin.Application.Payments.ReviewPaymentInstructionsCommandHandler"]
     mediator_646 --> mediator_648
-    mediator_650["ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommandHandler"]
-    mediator_648 --> mediator_650
-    mediator_652["command-with-response ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand"]
-    mediator_653["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_652 --> mediator_653
-    mediator_655["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_650["command-with-response ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand"]
+    mediator_651["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_650 --> mediator_651
+    mediator_653["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_651 --> mediator_653
+    mediator_655["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_653 --> mediator_655
-    mediator_657["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_657["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_655 --> mediator_657
-    mediator_659["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_659["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_657 --> mediator_659
-    mediator_661["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_661["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_659 --> mediator_661
-    mediator_663["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_663["ViajantesTurismo.Admin.Application.Payments.UpdatePaymentAccountCommandHandler"]
     mediator_661 --> mediator_663
-    mediator_665["ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommandHandler"]
-    mediator_663 --> mediator_665
-    mediator_667["command-with-response ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand"]
-    mediator_668["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_667 --> mediator_668
-    mediator_670["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_665["command-with-response ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand"]
+    mediator_666["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_665 --> mediator_666
+    mediator_668["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_666 --> mediator_668
+    mediator_670["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_668 --> mediator_670
-    mediator_672["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_672["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_670 --> mediator_672
-    mediator_674["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_674["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_672 --> mediator_674
-    mediator_676["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_676["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_674 --> mediator_676
-    mediator_678["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_678["ViajantesTurismo.Admin.Application.Payments.VerifyPaymentAccountCommandHandler"]
     mediator_676 --> mediator_678
-    mediator_680["ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommandHandler"]
-    mediator_678 --> mediator_680
-    mediator_682["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand"]
-    mediator_683["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_682 --> mediator_683
-    mediator_685["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_680["command-with-response ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand"]
+    mediator_681["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_680 --> mediator_681
+    mediator_683["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_681 --> mediator_683
+    mediator_685["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_683 --> mediator_685
-    mediator_687["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_687["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_685 --> mediator_687
-    mediator_689["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_689["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_687 --> mediator_689
-    mediator_691["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_691["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_689 --> mediator_691
-    mediator_693["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_693["ViajantesTurismo.Admin.Application.Payments.VoidPaymentInstructionsCommandHandler"]
     mediator_691 --> mediator_693
-    mediator_695["ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommandHandler"]
-    mediator_693 --> mediator_695
-    mediator_697["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand"]
-    mediator_698["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_697 --> mediator_698
-    mediator_700["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_695["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand"]
+    mediator_696["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_695 --> mediator_696
+    mediator_698["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_696 --> mediator_698
+    mediator_700["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_698 --> mediator_700
-    mediator_702["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_702["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_700 --> mediator_702
-    mediator_704["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_704["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_702 --> mediator_704
-    mediator_706["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_706["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_704 --> mediator_706
-    mediator_708["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_708["ViajantesTurismo.Admin.Application.Payments.WithdrawBookingFinancialApprovalCommandHandler"]
     mediator_706 --> mediator_708
-    mediator_710["ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommandHandler"]
-    mediator_708 --> mediator_710
-    mediator_712["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand"]
-    mediator_713["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_712 --> mediator_713
-    mediator_715["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_710["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand"]
+    mediator_711["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_710 --> mediator_711
+    mediator_713["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_711 --> mediator_713
+    mediator_715["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_713 --> mediator_715
-    mediator_717["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_717["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_715 --> mediator_717
-    mediator_719["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_719["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_717 --> mediator_719
-    mediator_721["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_721["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_719 --> mediator_721
-    mediator_723["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_723["ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentAccountVerificationCommandHandler"]
     mediator_721 --> mediator_723
-    mediator_725["ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommandHandler"]
-    mediator_723 --> mediator_725
-    mediator_727["command-with-response ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand"]
-    mediator_728["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
-    mediator_727 --> mediator_728
-    mediator_730["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_725["command-with-response ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand"]
+    mediator_726["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_725 --> mediator_726
+    mediator_728["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_726 --> mediator_728
+    mediator_730["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_728 --> mediator_730
-    mediator_732["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_732["ViajantesTurismo.Admin.Infrastructure.Payments.PaymentConcurrencyBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_730 --> mediator_732
-    mediator_734["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_734["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_732 --> mediator_734
-    mediator_736["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
+    mediator_736["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_734 --> mediator_736
-    mediator_738["ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommandHandler"]
+    mediator_738["ViajantesTurismo.Admin.Application.Payments.WithdrawPaymentInstructionApprovalCommandHandler"]
     mediator_736 --> mediator_738
-    mediator_740["command-with-response ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand"]
-    mediator_741["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_740["command-with-response ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand"]
+    mediator_741["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_740 --> mediator_741
-    mediator_743["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_743["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_741 --> mediator_743
-    mediator_745["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_745["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_743 --> mediator_745
-    mediator_747["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_747["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_745 --> mediator_747
-    mediator_749["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_749["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommand, SharedKernel.Results.Result#60;System.Guid#62;#62;"]
     mediator_747 --> mediator_749
-    mediator_751["ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommandHandler"]
+    mediator_751["ViajantesTurismo.Admin.Application.Tours.CreateTour.CreateTourCommandHandler"]
     mediator_749 --> mediator_751
-    mediator_753["command-with-response ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand"]
-    mediator_754["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_753["command-with-response ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand"]
+    mediator_754["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
     mediator_753 --> mediator_754
-    mediator_756["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_756["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
     mediator_754 --> mediator_756
-    mediator_758["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_758["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
     mediator_756 --> mediator_758
-    mediator_760["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_760["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
     mediator_758 --> mediator_760
-    mediator_762["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_762["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommand, SharedKernel.Results.Result#62;"]
     mediator_760 --> mediator_762
-    mediator_764["ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommandHandler"]
+    mediator_764["ViajantesTurismo.Admin.Application.Tours.DeleteTour.DeleteTourCommandHandler"]
     mediator_762 --> mediator_764
+    mediator_766["command-with-response ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand"]
+    mediator_767["ViajantesTurismo.Admin.Application.Pipeline.CancellationGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_766 --> mediator_767
+    mediator_769["ViajantesTurismo.Admin.Application.Bookings.Pipeline.BookingIdGuardBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_767 --> mediator_769
+    mediator_771["ViajantesTurismo.Admin.Infrastructure.AdminTransactionBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_769 --> mediator_771
+    mediator_773["ViajantesTurismo.Admin.Application.Pipeline.RequestActivityBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_771 --> mediator_773
+    mediator_775["ViajantesTurismo.Admin.Application.Pipeline.ResultTagBehavior#60;ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommand, SharedKernel.Results.Result#62;"]
+    mediator_773 --> mediator_775
+    mediator_777["ViajantesTurismo.Admin.Application.Tours.UpdateTour.UpdateTourCommandHandler"]
+    mediator_775 --> mediator_777
 ```
 <!-- generated:admin-mediator-topology:end -->

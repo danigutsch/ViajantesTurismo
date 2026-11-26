@@ -20,6 +20,8 @@ internal static class AdminRouteGroupExtensions
     private const string PaymentAccountsGroupName = "PaymentAccounts";
     private const string DocumentsRoutePrefix = "documents";
     private const string DocumentsGroupName = "Documents";
+    private const string OperationsRoutePrefix = "operations";
+    private const string OperationsGroupName = "Operations";
 
     /// <summary>
     /// Gets the OpenAPI document names used by the Admin API.
@@ -98,6 +100,15 @@ internal static class AdminRouteGroupExtensions
         return app.MapRouteGroup(DocumentsRoutePrefix, DocumentsGroupName)
             .WithNoStoreResponses($"/api/{CurrentApiVersion.RouteSegment}/{DocumentsRoutePrefix}");
     }
+
+    /// <summary>Maps operations routes with the specified read permission and no-store response metadata.</summary>
+    /// <param name="app">The web application to configure.</param>
+    /// <param name="readPermission">The named authorization policy for this operations scope.</param>
+    /// <returns>The configured operations group.</returns>
+    public static RouteGroupBuilder MapOperationsGroup(this WebApplication app, string readPermission) =>
+        app.MapRouteGroup(OperationsRoutePrefix, OperationsGroupName)
+            .RequireAuthorization(readPermission)
+            .WithNoStoreResponses($"/api/{CurrentApiVersion.RouteSegment}/{OperationsRoutePrefix}");
 
     /// <summary>
     /// Maps the API error documentation route group with the current API version prefix.
