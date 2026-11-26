@@ -1,4 +1,5 @@
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;

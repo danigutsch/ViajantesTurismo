@@ -6,12 +6,11 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The pin uses [published candidate `0.1.0-alpha.927.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.927.1)
-at clean library revision
-[`b0c75f3193a352bf95fb80453008c023ca8f07c5`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b0c75f3193a352bf95fb80453008c023ca8f07c5).
+The private Foundation and tooling qualification uses `0.1.0-alpha.954.1` from clean library revision
+[`691b489eb98b4114ff5bc6e76c8899f10cca9222`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/691b489eb98b4114ff5bc6e76c8899f10cca9222).
 The application uses its durable PostgreSQL scheduler and observed batch drains for document maintenance.
-The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45668337116)
-records Linux and Windows package consumption and NativeAOT.
+The [merged artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45698419039)
+records Linux and Windows package consumption and NativeAOT for the candidate archives.
 
 ## Compatible dependency updates
 
@@ -206,21 +205,22 @@ suite, API checks, package-consumption checks, and promised NativeAOT checks bef
 
 Update the committed candidate manifest, central package versions, local tool versions, and lock files
 in an application worktree. Stage the exact artifacts, run the application checks above, commit
-those changes, and record compatibility using:
+those changes, and use a published candidate with recipe support to record compatibility.
+On a clean machine, run the [SDK and candidate setup](#stage-the-candidate) first.
 
-```sh
-dotnet release verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
-  bash -c 'dotnet tool restore && dotnet restore ViajantesTurismo.slnx --locked-mode && dotnet ci openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
+```text
+dotnet release verify-consumer --candidate .local/sharedkernel-feed/candidate.json --recipe .config/consumer-verification.json
 ```
 
-The example uses Bash on Unix. Run tool restore and OpenAPI generation inside the verified command,
-using the equivalent fail-fast command sequence in the platform shell on Windows. Generated OpenAPI
-files in the working checkout are ignored and are not copied into the fresh verification clone.
+The [committed recipe](../../.config/consumer-verification.json) runs the same ordered .NET commands
+on Linux and Windows where the test prerequisites are installed. It restores tools and audited
+locked dependencies, verifies lock coverage, builds Release, generates OpenAPI contracts, and tests
+the solution. OpenAPI generation runs in the verification clone.
 
-When adopting a candidate that adds or updates the isolated Podman runner, also run the
-[focused Hosted storage validation](../../tests/ViajantesTurismo.HostedTests/README.md#isolated-local-podman-validation)
-on Linux inside `verify-consumer`. Restore the pinned tools and locked dependencies inside the
-verified command so the fresh clone exercises the candidate's runner and storage provider together.
+When adopting a candidate that adds or updates the isolated Podman runner, run the full solution
+and focused Hosted storage checks in two sequential private engines from the same verified clone.
+The Linux recipe binds the caller's image store, runtime parent, and separate retained output
+directories. [Isolated consumer validation](../../tests/ViajantesTurismo.HostedTests/README.md#verify-a-consumer-candidate-with-podman)
 
 Compatibility records both committed repository revisions and package hashes in
 `TestResults/consumer-compatibility.json` as `passed`, `failed`, or `pending` (uncommitted changes run
@@ -240,9 +240,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/b0c75f3193a352bf95fb80453008c023ca8f07c5/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/691b489eb98b4114ff5bc6e76c8899f10cca9222/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`b0c75f3193a352bf95fb80453008c023ca8f07c5`, which equals the `libraryRevision` in
+`691b489eb98b4114ff5bc6e76c8899f10cca9222`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

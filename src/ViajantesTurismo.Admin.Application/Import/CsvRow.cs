@@ -1,4 +1,4 @@
-using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>

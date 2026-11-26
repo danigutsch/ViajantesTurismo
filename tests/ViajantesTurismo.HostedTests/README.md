@@ -54,11 +54,12 @@ fixtures' images. Run from a disk-backed checkout and keep transient engine stat
 runtime directory.
 
 ```bash
-mkdir -p .local/hosted-podman
-podman_scratch=$(mktemp -d "$(pwd -P)/.local/hosted-podman/storage.XXXXXX")
+checkout=$(pwd -P)
+mkdir -p "${checkout}/.local/hosted-podman"
+podman_scratch=$(mktemp -d "${checkout}/.local/hosted-podman/storage.XXXXXX")
 podman_image_store=$(podman --remote=false info --format '{{.Store.GraphRoot}}')
-TMPDIR="$podman_scratch" dotnet repo run-isolated-podman \
-  --image-store "$podman_image_store" --network-helper pasta \
+TMPDIR="${podman_scratch}" dotnet repo run-isolated-podman \
+  --image-store "${podman_image_store}" --network-helper pasta \
   --runtime-parent "${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" -- \
   dotnet test --project tests/ViajantesTurismo.HostedTests -c Release -- \
   --filter-class '*MediaInfrastructureContainerTests' \
@@ -69,38 +70,59 @@ The focused run covers malware scanning, signed and unsigned S3 operations, and 
 identity. The runner shares the image store read-only and verifies teardown of its private runtime.
 If teardown reports a retained runtime directory, use that path to inspect the failed run.
 
-For the full Hosted suite, use a candidate that supports `--runtime-parent` and run from an
-ext4 worktree with `pasta` installed. The runner captures up to 8,388,608 characters on each
-child stream. Redirecting `dotnet repo` output in the outer shell still leaves the child
-streams connected to that capture. Redirect both streams inside a trusted executable wrapper
-to logs in a caller-owned directory outside the disposable Podman directories.
+For the full Hosted suite, use a candidate with managed child logs. Supply a caller-owned log
+directory outside the disposable engine paths. The runner retains `stdout.log` and `stderr.log`
+there, with a 64 MiB limit per stream. Use a new directory for each run. An existing log prevents
+the command from starting the engine.
 
 ```bash
 checkout=$(pwd -P)
 mkdir -p "${checkout}/.local/hosted-podman"
 run_directory=$(mktemp -d "${checkout}/.local/hosted-podman/run.XXXXXX")
 mkdir "${run_directory}/tmp"
-wrapper="${run_directory}/run-hosted"
-cat > "${wrapper}" <<'WRAPPER'
-#!/usr/bin/env bash
-stdout_log=$1
-stderr_log=$2
-shift 2
-exec "$@" > "${stdout_log}" 2> "${stderr_log}"
-WRAPPER
-chmod 700 "${wrapper}"
 
 podman_image_store=$(podman --remote=false info --format '{{.Store.GraphRoot}}')
 TMPDIR="${run_directory}/tmp" dotnet repo run-isolated-podman \
   --image-store "${podman_image_store}" --network-helper pasta \
-  --runtime-parent "${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" -- \
-  "${wrapper}" "${run_directory}/stdout.log" "${run_directory}/stderr.log" \
+  --runtime-parent "${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" \
+  --timeout-seconds 1800 --log-directory "${run_directory}" --max-log-bytes 67108864 -- \
   dotnet test --project tests/ViajantesTurismo.HostedTests -c Release
 ```
 
-The wrapper passes the test command and each argument separately. Its `exec` preserves the
-test process's exit status. The private runtime uses the user runtime directory, while the
-engine graph, volumes and test scratch use ext4. The caller keeps both logs after teardown.
+The runner returns the test process's exit status after verified teardown. Engine diagnostics
+go to the caller's standard error. Partial logs remain available if the child fails or times out.
+
+### Verify a consumer candidate with Podman
+
+Use the [committed Linux recipe](../../.config/consumer-verification-podman.json) with a published
+candidate that supports both recipe inputs and managed child logs. Supply the existing image store
+and runtime parent, plus separate directories for the full solution and focused storage results.
+Keep the verifier scratch on ext4. Use the existing Hosted and browser prerequisites for the full suite.
+
+```bash
+checkout=$(pwd -P)
+mkdir -p "${checkout}/.local/hosted-podman" "${checkout}/TestResults"
+scratch=$(mktemp -d "${checkout}/.local/hosted-podman/verify.XXXXXX")
+results=$(mktemp -d "${checkout}/TestResults/consumer-podman.XXXXXX")
+mkdir "${results}/suite-results" "${results}/storage-results"
+podman_image_store=$(podman --remote=false info --format '{{.Store.GraphRoot}}')
+
+TMPDIR="${scratch}" timeout --signal=INT --kill-after=180s 1800s \
+  dotnet release verify-consumer --candidate .local/sharedkernel-feed/candidate.json \
+  --output "${results}/consumer-compatibility.json" \
+  --recipe .config/consumer-verification-podman.json \
+  --recipe-input "image-store=${podman_image_store}" \
+  --recipe-input "runtime-parent=${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" \
+  --recipe-input "solution-results=${results}/suite-results" \
+  --recipe-input "storage-results=${results}/storage-results"
+```
+
+Both test steps use the same built clone and start their own engine in order. The solution
+child has 1,260 seconds and runs one test module at a time. The focused child has 180 seconds
+and requires all six storage tests. The entire verification has a 30-minute deadline, with a
+three-minute grace period for cleanup after interruption. Both engines read from the caller's
+image store. Each results directory retains its reports and two 64 MiB child logs after the
+clone is removed. The compatibility record is written alongside those directories.
 
 ## Demand-driven infrastructure
 

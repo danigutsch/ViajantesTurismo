@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using SharedKernel.Results;
 using SharedKernel.InputNormalization;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 

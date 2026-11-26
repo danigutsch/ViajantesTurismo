@@ -59,6 +59,7 @@ adopting a reader through the [pinned SharedKernel candidate workflow](../shared
 Admin supplies the revision and body mappings and includes all revisions with a finalization
 timestamp. This covers superseded and voided revisions as well as active versions. Delivery
 continues to validate each served artifact independently of the operator report.
+[Private operator command](../../src/ViajantesTurismo.MigrationService/README.md#finalized-artifact-integrity-report)
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized

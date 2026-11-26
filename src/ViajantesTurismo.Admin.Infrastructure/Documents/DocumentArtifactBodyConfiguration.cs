@@ -8,9 +8,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// <summary>Maps sealed document bytes separately from revision metadata.</summary>
 internal sealed class DocumentArtifactBodyConfiguration : IEntityTypeConfiguration<DocumentArtifactBody>
 {
-    private const string TableName = "DocumentArtifactBodies";
-    private const string ContentColumn = "Content";
     private const string ContentLengthConstraint = "CK_DocumentArtifactBodies_ContentLength";
+
+    /// <summary>The table holding the sealed artifact payload for a revision.</summary>
+    internal const string TableName = "DocumentArtifactBodies";
+
+    /// <summary>The database column holding the sealed artifact payload.</summary>
+    internal const string ContentColumn = "Content";
 
     /// <summary>The mapped field holding the sealed byte payload.</summary>
     internal const string ContentField = "_content";

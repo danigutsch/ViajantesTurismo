@@ -5,10 +5,12 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SharedKernel.Idempotency;
+using SharedKernel.Npgsql;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -643,6 +645,103 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         affected.ShouldBe(1);
         original.ShouldNotBeNull().ToArray().ShouldBe("sealed artifact"u8.ToArray());
         stored.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Operator_reconciliation_can_distinguish_retained_artifacts_that_delivery_withholds()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var superseded = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var voided = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var active = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var missing = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var draft = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        superseded.Supersede(now.AddMinutes(1)).IsSuccess.ShouldBeTrue();
+        voided.Void(DocumentVoidReason.AdministrativeVoid, now.AddMinutes(1)).IsSuccess.ShouldBeTrue();
+        await Scenario.Seed(superseded, voided, active, missing, draft);
+        await using var connection = new NpgsqlConnection(Scenario.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var change = new NpgsqlCommand(
+            """
+            UPDATE "DocumentArtifactBodies" SET "Content" = convert_to('tampered', 'UTF8') WHERE "DocumentId" = @voided;
+            DELETE FROM "DocumentArtifactBodies" WHERE "DocumentId" = @missing;
+            """, connection);
+        change.Parameters.AddWithValue("voided", voided.Id);
+        change.Parameters.AddWithValue("missing", missing.Id);
+        var changed = await change.ExecuteNonQueryAsync(ct);
+        await using var dataSource = NpgsqlDataSource.Create(Scenario.ConnectionString);
+        // Act
+        var first = await FinalizedArtifactIntegrityReader.ReadPage(dataSource, afterId: null, pageSize: 2, ct);
+        var second = await FinalizedArtifactIntegrityReader.ReadPage(dataSource, first[^1].Id, pageSize: 2, ct);
+        var exhausted = await FinalizedArtifactIntegrityReader.ReadPage(dataSource, second[^1].Id, pageSize: 2, ct);
+        var withheldIntact = await Scenario.ReadFinalizedArtifactContent(superseded.Id, ct);
+        var withheldCorrupt = await Scenario.ReadFinalizedArtifactContent(voided.Id, ct);
+        var deliverable = await Scenario.ReadFinalizedArtifactContent(active.Id, ct);
+
+        // Assert
+        changed.ShouldBe(2);
+        first.Count.ShouldBe(2);
+        second.Count.ShouldBe(2);
+        exhausted.ShouldBeEmpty();
+        PostgreSqlArtifactIntegrityResult[] expected =
+        [
+            new(superseded.Id, PostgreSqlArtifactIntegrityStatus.Intact),
+            new(voided.Id, PostgreSqlArtifactIntegrityStatus.DigestMismatch),
+            new(active.Id, PostgreSqlArtifactIntegrityStatus.Intact),
+            new(missing.Id, PostgreSqlArtifactIntegrityStatus.MissingBody)
+        ];
+        first.Concat(second).ShouldBe(expected.OrderBy(result => result.Id));
+        withheldIntact.ShouldBeNull();
+        withheldCorrupt.ShouldBeNull();
+        deliverable.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Artifact_report_command_outputs_only_integrity_and_continues_after_a_cursor()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var finalized = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var draft = DocumentDraftInfrastructureTestData.CreateDraft(now);
+        await Scenario.Seed(finalized, draft);
+
+        // Act
+        var initial = await PostgreSqlDocumentStoreScenario.RunArtifactReport(Scenario.ConnectionString, ct);
+        var continued = await PostgreSqlDocumentStoreScenario.RunArtifactReport(Scenario.ConnectionString, ct, "--after", finalized.Id.ToString("D"));
+
+        // Assert
+        initial.ExitCode.ShouldBe(0);
+        initial.StandardError.ShouldBeEmpty();
+        initial.StandardOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .ShouldBe(["revision_id\tintegrity", $"{finalized.Id:D}\tIntact"]);
+        continued.ExitCode.ShouldBe(0);
+        continued.StandardOutput.TrimEnd().ShouldBe("revision_id\tintegrity");
+    }
+
+    [Theory]
+    [InlineData(null, null, 2, "A dedicated artifact report PostgreSQL connection is required.")]
+    [InlineData("invalid-cursor", null, 2, "Usage: report finalized-artifacts [--after <revision-id>]")]
+    [InlineData(null, "not-a-connection-string", 1, "The artifact integrity report could not be read.")]
+    public async Task Artifact_report_refuses_invalid_input_with_safe_diagnostics(
+        string? cursor,
+        string? reportConnection,
+        int exitCode,
+        string diagnostic)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        string[] arguments = cursor is null ? [] : ["--after", cursor];
+
+        // Act
+        var result = await PostgreSqlDocumentStoreScenario.RunArtifactReport(reportConnection, ct, arguments);
+
+        // Assert
+        result.ExitCode.ShouldBe(exitCode);
+        result.StandardOutput.ShouldBeEmpty();
+        result.StandardError.TrimEnd().ShouldBe(diagnostic);
     }
 
     [Fact]

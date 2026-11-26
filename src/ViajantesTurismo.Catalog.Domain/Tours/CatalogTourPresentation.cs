@@ -1,4 +1,4 @@
-using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 using SharedKernel.InputNormalization;
 using SharedKernel.Results;
 

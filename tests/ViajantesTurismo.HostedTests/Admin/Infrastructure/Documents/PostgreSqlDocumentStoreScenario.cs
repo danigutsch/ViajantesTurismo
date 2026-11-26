@@ -1,4 +1,5 @@
 using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -19,6 +20,7 @@ using SharedKernel.Mediator;
 using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using SharedKernel.Npgsql;
 using SharedKernel.Results;
+using SharedKernel.Testing;
 using SharedKernel.Testing.Logging;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
@@ -411,6 +413,26 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentStore(dbContext).ReadFinalizedArtifactContent(id, ct);
+    }
+
+    /// <summary>Runs the artifact report from its real local operator entry point.</summary>
+    public static Task<TestProcessResult> RunArtifactReport(string? reportConnection, CancellationToken ct, params string[] reportArguments)
+    {
+        string[] arguments =
+        [
+            Path.Combine(AppContext.BaseDirectory, "ViajantesTurismo.MigrationService.dll"),
+            "report",
+            "finalized-artifacts",
+            .. reportArguments
+        ];
+        var environment = Environment.GetEnvironmentVariables().Cast<DictionaryEntry>()
+            .Select(entry => (string)entry.Key)
+            .Where(key => key.StartsWith("ConnectionStrings__", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("ConnectionStrings:", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary(key => key, _ => (string?)null, StringComparer.Ordinal);
+        environment["DOTNET_ENVIRONMENT"] = "Production";
+        environment["VT_DOCUMENT_ARTIFACT_REPORT_CONNECTION"] = reportConnection;
+        return TestProcess.Run("dotnet", AppContext.BaseDirectory, arguments, ct, environment);
     }
 
     /// <summary>Migrates this scenario's isolated database to the named migration, or to the latest when null.</summary>

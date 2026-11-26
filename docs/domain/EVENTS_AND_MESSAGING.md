@@ -38,20 +38,20 @@ message record. These concepts should not be represented by one catch-all type.
 
 Owns DDD primitives:
 
+- `IIdentified<TId>`.
 - `IEntity<TId>`.
 - `IAggregateRoot`.
 - `IAggregateRoot<TId>`.
 - `IDomainEvent`.
+- `ValueObject`.
 - Domain event recording and dequeueing.
 - `IDomainEventDispatcher`, `IDomainEventDispatchHandler`, and `CompositeDomainEventDispatcher`.
 - Generated typed outbox and audit dispatch composition.
 
 ### `SharedKernel.BuildingBlocks`
 
-Owns reusable identity interfaces, value objects, and small cross-context primitives:
+Owns reusable value objects and small cross-context primitives:
 
-- `IIdentified<TId>`.
-- `ValueObject`.
 - `DateRange`.
 - Future source-generated value-object conventions.
 

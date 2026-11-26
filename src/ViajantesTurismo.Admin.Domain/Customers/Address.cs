@@ -1,4 +1,5 @@
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 using JetBrains.Annotations;
 using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
