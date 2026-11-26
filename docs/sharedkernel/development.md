@@ -2,15 +2,16 @@
 
 SharedKernel implementations, reusable test helpers, analyzers, generators, samples, benchmarks,
 and library tooling belong to the separate SharedKernel repository. ViajantesTurismo consumes
-`PandaBear.SharedKernel.*` packages. C# namespaces use `PandaBear.*`; assembly and project names remain `SharedKernel.*`.
+`PandaBear.SharedKernel.*` packages. C# namespace, assembly and project names use `SharedKernel.*`.
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The private Foundation and tooling qualification uses `0.1.0-alpha.954.1` from clean library revision
-[`691b489eb98b4114ff5bc6e76c8899f10cca9222`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/691b489eb98b4114ff5bc6e76c8899f10cca9222).
-The application uses its durable PostgreSQL scheduler and observed batch drains for document maintenance.
-The [merged artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45698419039)
-records Linux and Windows package consumption and NativeAOT for the candidate archives.
+The app pins [`0.1.0-alpha.963.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.963.1)
+from clean library revision `9d5a1975e147989630f75e5345117462575ca3be`. The candidate includes the
+Linux resource guard for local consumer validation. The app uses its durable PostgreSQL scheduler
+and observed batch drains for document maintenance.
+[Merged artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45770249644) ·
+[Published candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45772572655)
 
 ## Compatible dependency updates
 
@@ -230,6 +231,45 @@ identity does not establish compatibility with previously published `SharedKerne
 Rollback may use only an approved, non-retired compatible candidate after validation. Update the
 application dependency configuration, candidate manifest, and lock files together, then stage
 that candidate's exact artifacts. Retired releases must remain deleted and must not be consumed again.
+
+### Guard local consumer validation on Linux
+
+After staging a published candidate that includes `dotnet repo run-with-budget`, run the opt-in
+guard from the application root. Set `VALIDATION_SCRATCH` to an existing absolute directory on
+disk and `VALIDATION_REPORT` to an absolute path for a new JSON report. Set the two `_MIB` floors
+to the available host RAM and scratch space you want to reserve. Set `VALIDATION_SAMPLE_SECONDS`
+to the interval between resource checks. The guard uses the scratch directory for `TMPDIR` and
+leaves the report at the caller's path after the verifier cleans up.
+Use paths outside the working tree or ignored by Git to keep the application checkout clean
+for the committed-revision check.
+
+On a host with a delegated cgroup v2 memory controller, set `VALIDATION_MEMORY_HIGH` and
+`VALIDATION_MEMORY_MAX` for the transient user scope. The scope applies limits to processes
+that stay in it. Run `dotnet repo run-with-budget` directly on hosts without user scopes.
+[Transient scopes](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html) ·
+[Memory controls](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+
+```sh
+systemd-run --user --scope \
+  -p "MemoryHigh=$VALIDATION_MEMORY_HIGH" -p "MemoryMax=$VALIDATION_MEMORY_MAX" -p MemorySwapMax=0 \
+  dotnet repo run-with-budget --working-directory "$PWD" --scratch "$VALIDATION_SCRATCH" \
+  --report "$VALIDATION_REPORT" --minimum-host-memory-mib "$VALIDATION_HOST_FLOOR_MIB" \
+  --minimum-scratch-mib "$VALIDATION_SCRATCH_FLOOR_MIB" --reject-memory-filesystem \
+  --sample-seconds "$VALIDATION_SAMPLE_SECONDS" \
+  -- dotnet release verify-consumer --candidate .local/sharedkernel-feed/candidate.json \
+     --recipe .config/consumer-verification.json
+```
+
+For the Linux Podman recipe, pass the recipe path and the same caller inputs shown in the
+[isolated validation instructions](../../tests/ViajantesTurismo.HostedTests/README.md#verify-a-consumer-candidate-with-podman).
+The guard stops its observed owned child process tree when a limit is crossed. Podman may put
+containers in separate scopes. Keep the host OOM, swap and shared-memory monitor active and
+check each private engine and its cleanup through the isolated runner.
+
+Retain the guard report together with the consumer compatibility record and pinned artifact
+hashes. For a safe preflight control, repeat with a new report path and set
+`VALIDATION_HOST_FLOOR_MIB` above the host's `MemTotal` converted to MiB. Expect exit 125,
+`reason` set to `HostMemoryFloor`, and `childStarted` set to `false` in the report.
 
 Generic outbox and idempotency implementation tests live in the library persistence test project.
 The transfer preserves 37 guards in library test commit `3752abb54681e28f4d16abd29966bab3819dd0ea`;
