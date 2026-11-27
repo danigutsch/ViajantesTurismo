@@ -172,21 +172,39 @@
       "project": "src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj",
       "generateProperty": "GenerateAdminOpenApiArtifacts",
       "refreshProperty": "RefreshAdminOpenApiArtifacts",
-      "preserveEnvironment": ["REMOTE_CONTAINERS"]
+      "preserveEnvironment": [
+        "DOTNET_CLI_USE_MSBUILD_SERVER",
+        "MSBUILDDISABLENODEREUSE",
+        "MSBUILDUSESERVER",
+        "REMOTE_CONTAINERS",
+        "UseSharedCompilation"
+      ]
     },
     {
       "name": "branding",
       "project": "src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj",
       "generateProperty": "GenerateBrandingOpenApiArtifacts",
       "refreshProperty": "RefreshBrandingOpenApiArtifacts",
-      "preserveEnvironment": ["REMOTE_CONTAINERS"]
+      "preserveEnvironment": [
+        "DOTNET_CLI_USE_MSBUILD_SERVER",
+        "MSBUILDDISABLENODEREUSE",
+        "MSBUILDUSESERVER",
+        "REMOTE_CONTAINERS",
+        "UseSharedCompilation"
+      ]
     },
     {
       "name": "catalog",
       "project": "src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj",
       "generateProperty": "GenerateCatalogOpenApiArtifacts",
       "refreshProperty": "RefreshCatalogOpenApiArtifacts",
-      "preserveEnvironment": ["REMOTE_CONTAINERS"]
+      "preserveEnvironment": [
+        "DOTNET_CLI_USE_MSBUILD_SERVER",
+        "MSBUILDDISABLENODEREUSE",
+        "MSBUILDUSESERVER",
+        "REMOTE_CONTAINERS",
+        "UseSharedCompilation"
+      ]
     }
   ],
   "coverage": {

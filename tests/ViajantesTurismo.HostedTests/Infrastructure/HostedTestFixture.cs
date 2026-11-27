@@ -138,6 +138,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
         var observability = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", "observability"));
         _ = builder.AddOpenTelemetryCollectorGateway(CollectorName,
             Path.Combine(observability, "otel-collector", "privacy.yaml"), Path.Combine(observability, "otel-collector", "aspire.yaml")).WithExplicitStart();
+        PodmanContainerBudget.Apply(builder);
         // No resource name is awaited: explicit-start resources stay NotStarted until a test demands them. Keep project resources
         // out of this model: a WaitFor edge to a resource that never starts would block the application start.
         return AspireTestApplication.Start(builder, [], StartBudget, ct);

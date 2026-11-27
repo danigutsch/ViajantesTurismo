@@ -50,13 +50,8 @@ public sealed record CatalogTourPresentationUpdate(
             itinerary,
             seoTitle,
             seoDescription);
-        if (presentation.IsFailure)
-        {
-            return presentation.ConvertError<CatalogTourPresentation, CatalogTourPresentationUpdate>();
-        }
 
-        var value = presentation.Value;
-        return Result.Ok(new CatalogTourPresentationUpdate(
+        return presentation.Map(static value => new CatalogTourPresentationUpdate(
             value.Title,
             value.Slug,
             value.Summary,

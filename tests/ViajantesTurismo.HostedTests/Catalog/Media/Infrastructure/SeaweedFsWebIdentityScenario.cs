@@ -100,6 +100,7 @@ internal sealed class SeaweedFsWebIdentityScenario : IAsyncDisposable
                 .WithHttpsEndpoint(targetPort: 8333)
                 .WaitFor(identity);
 
+            PodmanContainerBudget.Apply(builder);
             var started = await AspireTestApplication.Start(builder, [Storage, IdentityProvider], StartupTimeout, ct);
             return new SeaweedFsWebIdentityScenario(started, authority, workloadSecret);
         }

@@ -4,15 +4,15 @@
     "net11.0": {
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.970.1, )",
-        "resolved": "0.1.0-alpha.970.1",
-        "contentHash": "zJ92ikop2N3au39coW/n6H0m1hEmzZu0WunZ1IPUDlnHFAsv4I2CrprSb5Rbsf1DCFP2usz/w39blit9SgtEkw=="
+        "requested": "[0.1.0-alpha.989.1, )",
+        "resolved": "0.1.0-alpha.989.1",
+        "contentHash": "WdzrigtVo/a0b2cRiaJleBm0lbXHsp5RS5qtj2vd0Trk6BsO3A2pj/KFt3oeIePCFtWxfnkAKzYDESH/aZueOA=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.970.1, )",
-        "resolved": "0.1.0-alpha.970.1",
-        "contentHash": "Jw+ZhfT4RTZYywftrpHDjG84qSf7coGrf2xtreJ1py6hbXtrXyRVj5nQrqAWeozRrWctGInHZmc+9yXvu2xYjQ=="
+        "requested": "[0.1.0-alpha.989.1, )",
+        "resolved": "0.1.0-alpha.989.1",
+        "contentHash": "HUhan6s2ncehoA2xcG3PQFpXLASg2qB2lFLecXnkSkLDbjvA5B6ITFrwD7QUZS1nfFBhGsearfYzIjZYC7LWMA=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
@@ -25,25 +25,25 @@
       "viajantesturismo.admin.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.970.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.989.1, )"
         }
       },
       "viajantesturismo.branding.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.970.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.989.1, )"
         }
       },
       "viajantesturismo.catalog.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.970.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.989.1, )"
         }
       },
       "viajantesturismo.repositorydocumentation": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.970.1, )",
+          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.989.1, )",
           "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
@@ -71,9 +71,9 @@
       },
       "PandaBear.SharedKernel.Documentation": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.970.1, )",
-        "resolved": "0.1.0-alpha.970.1",
-        "contentHash": "M1yewFqgrF7ZWHl0BNUgO6Llvx1SMaEK7P5sW+IiSA59IZN3xg0FhKqevDGyGvxZZ0PyXpwrgU1VOpLXxb+Ksw==",
+        "requested": "[0.1.0-alpha.989.1, )",
+        "resolved": "0.1.0-alpha.989.1",
+        "contentHash": "BkL97vz0cPF5n5l946uEiFQlG2S6WcGv/NV3L9QsABndvD1+vGVpp10E6lk+q/PTN1g8hULGmxPxAaDFJJuwAQ==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "5.12.0",
           "Microsoft.CodeAnalysis.CSharp": "5.12.0"
@@ -81,17 +81,17 @@
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.970.1, )",
-        "resolved": "0.1.0-alpha.970.1",
-        "contentHash": "WTEbRJ1qvpOhvP3edDuz4pi6yrplfwKPZHVm6St2COW5yTlR30bn0NgjznRs4TnIivqWXIRFiI/ZkPTwYV8wIQ=="
+        "requested": "[0.1.0-alpha.989.1, )",
+        "resolved": "0.1.0-alpha.989.1",
+        "contentHash": "XGC6dLr+4s5FFYlJMN9AZSsM3THXv/Mmbztig7ximEQzrX3iChnnIcJqIjuj/dj6bvYdqoEilBeJgFutoEpUIg=="
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.970.1, )",
-        "resolved": "0.1.0-alpha.970.1",
-        "contentHash": "FQFbF1fEFH+tMI/hQZRCqVfK5R1pIYfxYo+vu9eIBTFmMogB0m5YtZkGRCdTcItitxaXiSWLS8d7wtBixC1WNg==",
+        "requested": "[0.1.0-alpha.989.1, )",
+        "resolved": "0.1.0-alpha.989.1",
+        "contentHash": "W9tdSwxJ/85xGsjjogDuakZpt8FPOQhO6UeGgOKWex790pW+oHpOWKjJDCI9sEoLpwhbcxSl0/YEH5/EslNZzA==",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.970.1"
+          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.989.1"
         }
       }
     }
