@@ -38,7 +38,7 @@ public sealed class CatalogGalleryAcceptancePostgreSqlTests(HostedTestFixture sh
             WHERE "CatalogTourId" = {tour.Id} AND "Sequence" = {sequence}
             """).SingleAsync(ct);
         await scenario.Handler.Handle(wake, ct);
-        var removed = await scenario.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        var removed = await scenario.Database.Database.ExecuteSqlAsync($"""
             DELETE FROM messaging.outbox_messages WHERE "EventId" = {wake.EventId.ToString("D")}
             """, ct);
         var applied = await scenario.ProcessStatus.Read(tour.Id, sequence, ct);
@@ -69,7 +69,7 @@ public sealed class CatalogGalleryAcceptancePostgreSqlTests(HostedTestFixture sh
         var tour = await scenario.SeedDraft(authoredGallery: false, ct);
         var intentId = Guid.CreateVersion7();
         var photos = Array.Empty<Guid>();
-        await scenario.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        await scenario.Database.Database.ExecuteSqlAsync($"""
             INSERT INTO "CatalogGalleryPlacementIntents"
                 ("Id", "CatalogTourId", "Sequence", "PhotoIds", "CanPublish", "AppendsUploadedPhoto")
             VALUES ({intentId}, {tour.Id}, 1, {photos}, false, false)

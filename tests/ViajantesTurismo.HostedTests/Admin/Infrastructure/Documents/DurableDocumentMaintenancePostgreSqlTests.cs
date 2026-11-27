@@ -31,6 +31,33 @@ public sealed class DurableDocumentMaintenancePostgreSqlTests(PostgreSqlTestServ
     }
 
     [Fact]
+    public async Task Scheduler_initialization_rejects_a_nonunique_running_index()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var database = await fixture.CreateDatabase(ct);
+        await using var dataSource = NpgsqlDataSource.Create(database.ConnectionString);
+        await using var schema = dataSource.CreateCommand("CREATE SCHEMA document_maintenance");
+        await schema.ExecuteNonQueryAsync(ct);
+        var scheduler = new PostgreSqlJobScheduler(dataSource, DocumentMaintenanceSchedule.DurableSchema);
+        await scheduler.InitializeSchema(ct);
+        await using var drift = dataSource.CreateCommand("""
+            DROP INDEX document_maintenance.scheduler_executions_running_job;
+            CREATE INDEX scheduler_executions_running_job
+                ON document_maintenance.scheduler_executions (job_name)
+                WHERE started_at IS NOT NULL AND outcome IS NULL;
+            """);
+        await drift.ExecuteNonQueryAsync(ct);
+        Func<Task> initialize = () => scheduler.InitializeSchema(ct);
+
+        // Act
+        var rejected = await initialize.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        rejected.Message.ShouldContain("scheduler_executions_running_job", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task The_three_durable_workers_keep_the_first_completion_based_delay_across_restart()
     {
         // Arrange

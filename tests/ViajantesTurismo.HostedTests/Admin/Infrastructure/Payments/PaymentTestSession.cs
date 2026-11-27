@@ -121,7 +121,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         var transaction = await Context.Database.BeginTransactionAsync(ct);
         try
         {
-            _ = await Context.Database.ExecuteSqlInterpolatedAsync($"""
+            _ = await Context.Database.ExecuteSqlAsync($"""
                 SELECT 1 FROM "Booking" WHERE "Id" = {bookingId} FOR UPDATE
                 """, ct);
             return transaction;

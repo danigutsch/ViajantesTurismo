@@ -181,6 +181,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("Time")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("WorkflowCorrelationId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventId")
@@ -189,6 +192,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.HasIndex("PublishedAt", "EnqueuedAt");
 
                     b.HasIndex("PublishedAt", "NextPublishAttemptAt", "EnqueuedAt");
+
+                    b.HasIndex("WorkflowCorrelationId", "EnqueuedAt", "Id")
+                        .IsDescending(false, true, true);
 
                     b.ToTable("outbox_messages", "messaging");
                 });
@@ -287,6 +293,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("Time")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("WorkflowCorrelationId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ConsumerName", "EventId")
@@ -295,6 +304,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.HasIndex("ConsumerName", "PoisonedAt");
 
                     b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
+
+                    b.HasIndex("ConsumerName", "WorkflowCorrelationId", "ReceivedAt", "Id")
+                        .IsDescending(false, false, true, true);
 
                     b.ToTable("transport_messages", "messaging");
                 });
@@ -524,7 +536,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                     b.HasIndex("Slug")
                         .IsUnique()
-                        .HasAnnotation("PandaBear:UniqueRule", "catalog.tour-slug");
+                        .HasAnnotation("SharedKernel:UniqueRule", "catalog.tour-slug");
 
                     b.ToTable("CatalogTourReadModels", (string)null);
                 });
@@ -632,12 +644,12 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                                 .IsUnique()
                                 .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_Cover")
                                 .HasFilter("\"IsCover\" = TRUE")
-                                .HasAnnotation("PandaBear:UniqueRule", "catalog.gallery-placement");
+                                .HasAnnotation("SharedKernel:UniqueRule", "catalog.gallery-placement");
 
                             b1.HasIndex("CatalogTourId", "DisplayOrder")
                                 .IsUnique()
                                 .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder")
-                                .HasAnnotation("PandaBear:UniqueRule", "catalog.gallery-placement");
+                                .HasAnnotation("SharedKernel:UniqueRule", "catalog.gallery-placement");
 
                             b1.ToTable("PublicMediaImageTourLinks", (string)null);
 

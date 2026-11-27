@@ -12,7 +12,7 @@
     <PublicPageHead Title="@($"{album.Title} - {Links.Heading} - Viajantes Turismo")"
                     Path="@GalleryPageLinks.PagePath(GalleryPageLinks.AlbumPath(album.Slug), album.Page)" />
 
-    <AlbumSection Title="@album.Title" TitleLanguage="@Links.TitleLanguage(album.TitleLanguage)" Slug="@Slug.Restore(album.Slug)" Level="1"
+    <AlbumSection Heading="@album.Title" TitleLanguage="@Links.TitleLanguage(album.TitleLanguage)" Slug="@Slug.Restore(album.Slug)" Level="1"
                   Photos="@TourImageRenditions.Gallery(LinkGenerator, album.Photos)"
                   Window="@PageWindow.Create(album.Page, album.PageSize, album.PhotoCount)"
                   PageHref="@AlbumLink" PagerLabel="@Links.PagerLabel" PreviousText="@Links.Previous" NextText="@Links.Next"
@@ -23,7 +23,7 @@
 else if (_loadFailed)
 {
     <PageTitle>@Links.Heading - Viajantes Turismo</PageTitle>
-    <Section Title="@Links.Heading" Level="1">
+    <Section Heading="@Links.Heading" Level="1">
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar este álbum. Tente novamente mais tarde." : "This album could not be loaded right now. Try again later.")</p>
     </Section>
 }

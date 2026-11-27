@@ -9,7 +9,7 @@
 
 <PublicPageHead Title="@DocumentTitle" Description="@Description" Path="@CanonicalPath" />
 
-<Section Title="@Links.Heading" Level="1" Intro="@Description">
+<Section Heading="@Links.Heading" Level="1" Intro="@Description">
     @if (_loadFailed)
     {
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar a galeria. Tente novamente mais tarde." : "The gallery could not be loaded right now. Try again later.")</p>

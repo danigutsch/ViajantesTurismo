@@ -79,4 +79,20 @@ internal static class MigrationBaselineFixture
         return await scope.WriteManifest("admin-document-maintenance-scheduler",
             [new("expand", expand), new("verify", verify)], ct, context: "admin");
     }
+
+    /// <summary>Writes a synthetic manifest using the selected owner's reviewed workflow expansion and verification.</summary>
+    internal static async Task<string> WriteWorkflowCorrelationManifest(
+        MigrationExecutionPostgreSqlScenario scope, string context, CancellationToken ct, string journalSchema = "")
+    {
+        var migrationId = context + "-workflow-correlation";
+        var expand = await ReadExpansionScript(migrationId, ct);
+        var verify = await ReadExpansionScript(migrationId + "-verify", ct);
+        return await scope.WriteManifest(migrationId, [new("expand", expand), new("verify", verify)],
+            ct, context: context, journalSchema: journalSchema);
+    }
+
+    /// <summary>Reads a maintained expansion asset copied into the test host.</summary>
+    internal static Task<string> ReadExpansionScript(string asset, CancellationToken ct) =>
+        File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationExpansions", asset + ".sql"), ct);
 }

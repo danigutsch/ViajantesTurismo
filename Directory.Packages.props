@@ -15,13 +15,13 @@
     <PackageVersion Include="Aspire.Hosting.Redis" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="17.0.0" />
     <PackageVersion Include="Aspire.Npgsql" Version="17.0.0" />
-    <!-- The Aspire 17 EF adapter is a preview and its .NET 11 target requires the Npgsql EF 11 line. -->
+    <!-- Keep the stable Aspire EF adapter while its Aspire 17 successor is in preview. -->
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.5" />
     <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="17.0.0" />
     <PackageVersion Include="AWSSDK.S3" Version="4.1.2.1" />
     <!-- ASP.NET Core authentication and EF-backed Data Protection -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0" />
     <!--
       The .NET 11 upgrade selected MSBuild 18.12.2. An unpinned MigrationService restore
       resolves Framework 18.7.1 through Roslyn MSBuild Workspaces and EF Design.
@@ -62,7 +62,8 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.12.0" />
     <!-- PostgreSQL caching and EF Core provider -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Postgres" Version="1.2.2" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.4" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0" />
+    <PackageVersion Include="Npgsql.OpenTelemetry" Version="11.0.0" />
     <!-- Blazor components and OpenAPI generation -->
     <PackageVersion Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
@@ -76,12 +77,13 @@
     -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="11.0.0" />
     <!-- EF tooling and runtime. Align their major version with the Npgsql EF provider. -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.15" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="11.0.0" />
     <!--
       An unpinned Architecture.Analyzers.Tests restore follows Coverlet MTP's
       DependencyInjection 10.0.12 minimum. Recheck after a Coverlet update.
@@ -108,97 +110,97 @@
     <!-- Benchmarks, annotations, image processing and the PostgreSQL driver -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="JetBrains.Annotations" Version="2026.2.0" />
-    <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.0" />
-    <PackageVersion Include="Npgsql" Version="10.0.4" />
+    <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.1" />
+    <PackageVersion Include="Npgsql" Version="11.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="PandaBear.SharedKernel.AI" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.CodeFixes" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Localization" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Seo" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.K6" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AuditTrail" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Branding" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Blazor" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Blazor.Site" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.BuildingBlocks" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.Abstractions" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.DocumentRendering" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Documentation" Version="0.1.0-alpha.963.1" />
-        <PackageVersion Include="PandaBear.SharedKernel.Domain" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Domain.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Domain.CodeFixes" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Domain.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Domain.SourceGenerator" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.EventSourcing" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.EventSourcing.Npgsql" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Galleries" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.HttpClients" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.Abstractions" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.AspNetCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ImageProcessing" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.InputNormalization" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.IntegrationTesting" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.IO" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.IO.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv.Testing" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Mediator" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Mediator.Abstractions" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Mediator.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Mediator.SourceGenerator" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Messaging" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.CloudEvents" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Npgsql" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Npgsql.Testing" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage.FileSystem" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage.S3" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Observability" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Observability.Npgsql" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.OpenApi" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Results" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Results.AspNet" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Scheduling" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.ServiceDefaults" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Style.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Style.CodeFixes" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Tabular" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Analyzers" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.AI" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.AspNetCore" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Assertions" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Contracts" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Roslyn" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Http" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Logging" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.MalwareScanning" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.ObjectStorage" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Playwright" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Snapshots" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.Testing.Xunit" Version="0.1.0-alpha.963.1" />
-    <PackageVersion Include="PandaBear.SharedKernel.UploadSanitizing" Version="0.1.0-alpha.963.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AI" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.CodeFixes" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Localization" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Seo" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.K6" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AuditTrail" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Branding" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Blazor" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Blazor.Site" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.BuildingBlocks" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.Abstractions" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.DocumentRendering" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Documentation" Version="0.1.0-alpha.970.1" />
+        <PackageVersion Include="PandaBear.SharedKernel.Domain" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Domain.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Domain.CodeFixes" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Domain.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Domain.SourceGenerator" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.EventSourcing" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.EventSourcing.Npgsql" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Galleries" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.HttpClients" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.Abstractions" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.AspNetCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Idempotency.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ImageProcessing" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.InputNormalization" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.IntegrationTesting" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.IO" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.IO.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv.Testing" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Mediator" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Mediator.Abstractions" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Mediator.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Mediator.SourceGenerator" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Messaging" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.CloudEvents" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Npgsql" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Npgsql.Testing" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage.FileSystem" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ObjectStorage.S3" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Observability" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Observability.Npgsql" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.OpenApi" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Results" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Results.AspNet" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Scheduling" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ServiceDefaults" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Style.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Style.CodeFixes" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Tabular" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Analyzers" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.AI" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.AspNetCore" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Assertions" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Contracts" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Roslyn" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Http" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Logging" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.MalwareScanning" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.ObjectStorage" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Playwright" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Snapshots" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Testing.Xunit" Version="0.1.0-alpha.970.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.UploadSanitizing" Version="0.1.0-alpha.970.1" />
   </ItemGroup>
 </Project>

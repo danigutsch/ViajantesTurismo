@@ -36,7 +36,7 @@ public sealed class CatalogGalleryPendingWakePostgreSqlTests(HostedTestFixture s
         var lastAttempt = DateTimeOffset.UnixEpoch.AddDays(20);
         var nextAttempt = lastAttempt.AddSeconds(30);
         var laterAttempt = nextAttempt.AddSeconds(5);
-        var staged = await scenario.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        var staged = await scenario.Database.Database.ExecuteSqlAsync($"""
             UPDATE messaging.outbox_messages
             SET "PublishAttempts" = 2, "LastPublishAttemptAt" = {lastAttempt},
                 "NextPublishAttemptAt" = CASE "EventId"
@@ -61,12 +61,12 @@ public sealed class CatalogGalleryPendingWakePostgreSqlTests(HostedTestFixture s
             bootstrap.EventId, bootstrap.RecordedAt, first.Id, sequence), ct);
         var afterCommit = await scenario.GalleryOperations.ReadRetryHealth(laterAttempt, ct);
         var triggering = await scenario.GalleryOperations.Read(first.Id, sequence, ct);
-        await scenario.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        await scenario.Database.Database.ExecuteSqlAsync($"""
             DELETE FROM messaging.outbox_messages WHERE "EventId" = {bootstrapWakeId}
             """, ct);
         await scenario.TourProjection.Apply(bootstrap, ct);
         var afterRemoval = await scenario.GalleryOperations.Read(first.Id, sequence, ct);
-        await scenario.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        await scenario.Database.Database.ExecuteSqlAsync($"""
             UPDATE messaging.outbox_messages SET "PublishedAt" = {nextAttempt} WHERE "EventId" = {ordinaryWakeId}
             """, ct);
         var afterPublication = await scenario.GalleryOperations.Read(first.Id, sequence, ct);

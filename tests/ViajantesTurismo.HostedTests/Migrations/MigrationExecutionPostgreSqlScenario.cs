@@ -132,6 +132,32 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         await ExecuteRoleStatement(database.ConnectionString, define, grant, ct);
     }
 
+    /// <summary>Grants workflow table ownership and separate rights to append and verify the owning history.</summary>
+    public async Task GrantWorkflowCorrelationExpansion(bool asBranding, CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE OR REPLACE FUNCTION pg_temp.grant_workflow_expansion(
+                owner_role text, verifier_role text, target_schema text, history_table text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('GRANT USAGE, CREATE ON SCHEMA %I TO %I', target_schema, owner_role);
+                EXECUTE pg_catalog.format('ALTER TABLE %I.outbox_messages OWNER TO %I', target_schema, owner_role);
+                IF target_schema = 'messaging' THEN
+                    EXECUTE pg_catalog.format('ALTER TABLE messaging.transport_messages OWNER TO %I', owner_role);
+                END IF;
+                EXECUTE pg_catalog.format('GRANT INSERT ON public.%I TO %I', history_table, owner_role);
+                EXECUTE pg_catalog.format('GRANT SELECT ON public.%I TO %I', history_table, verifier_role);
+            END;
+            $fixture$;
+            """);
+        var grant = new NpgsqlBatchCommand("SELECT pg_temp.grant_workflow_expansion($1, $2, $3, $4);");
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? BrandingOwner : Owner });
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? BrandingVerifier : Verifier });
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? "branding" : "messaging" });
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? "__EFMigrationsHistory_Branding" : "__EFMigrationsHistory" });
+        await ExecuteRoleStatement(database.ConnectionString, define, grant, ct);
+    }
+
     /// <summary>Provisions a disposable scheduler login that can append audit but cannot edit or delete it.</summary>
     public async Task ProvisionAdminSchedulerRuntime(CancellationToken ct)
     {

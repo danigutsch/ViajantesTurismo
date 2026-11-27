@@ -41,6 +41,24 @@
         <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/admin-document-maintenance-scheduler-verify.sql"
                  Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/admin-workflow-correlation.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/admin-workflow-correlation-verify.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/branding-workflow-correlation.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/branding-workflow-correlation-verify.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/catalog-workflow-correlation.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/catalog-workflow-correlation-verify.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="../fixtures/reproduction/ReproductionFixtureEnvironment.cs" Link="Reproduction/ReproductionFixtureEnvironment.cs" />

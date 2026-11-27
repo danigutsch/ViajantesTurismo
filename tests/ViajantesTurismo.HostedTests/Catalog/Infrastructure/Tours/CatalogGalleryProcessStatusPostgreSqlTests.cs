@@ -86,10 +86,10 @@ public sealed class CatalogGalleryProcessStatusPostgreSqlTests(HostedTestFixture
         var operationsOtherMissing = await scenario.GalleryOperations.Read(retiringTour.Id, second.Value, ct);
         var marker = await scenario.Database.CatalogTourRetirements.AsNoTracking()
             .SingleAsync(row => row.AdminTourId == retiringTour.AdminTourId, ct);
-        await relational.ExecuteSqlInterpolatedAsync($"""
+        await relational.ExecuteSqlAsync($"""
             UPDATE "CatalogTourRetirements" SET "RetirementId" = {Guid.CreateVersion7()} WHERE "AdminTourId" = {retiringTour.AdminTourId}
             """, ct);
-        await relational.ExecuteSqlInterpolatedAsync($"""
+        await relational.ExecuteSqlAsync($"""
             UPDATE "CatalogTourRetirements" SET "RetirementId" = {marker.RetirementId} WHERE "AdminTourId" = {tour.AdminTourId}
             """, ct);
         var disjointRetirement = await scenario.GalleryOperations.Read(retiringTour.Id, first.Value, ct);

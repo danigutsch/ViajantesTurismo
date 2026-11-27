@@ -23,7 +23,7 @@ internal static class BrandingTransportPostgreSqlScenario
         CancellationToken ct)
     {
         var id = Guid.CreateVersion7();
-        return dbContext.Database.ExecuteSqlInterpolatedAsync(
+        return dbContext.Database.ExecuteSqlAsync(
             $"""
             INSERT INTO messaging.transport_messages
                 ("Id", "ConsumerName", "ReceivedAt", "ConsumeAttempts", "EnvelopeSpec", "EnvelopeSpecVersion",

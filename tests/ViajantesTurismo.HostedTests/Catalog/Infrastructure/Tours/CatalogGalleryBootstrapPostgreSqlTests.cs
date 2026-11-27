@@ -117,7 +117,7 @@ public sealed class CatalogGalleryBootstrapPostgreSqlTests(HostedTestFixture sha
         var actual = await scenario.Tours.GetTour(tour.Id, ct);
         var wakes = await scenario.CountOutbox(ct);
         var bootstrapWakeId = wake.EventId.ToString("D");
-        await relational.ExecuteSqlInterpolatedAsync($"""
+        await relational.ExecuteSqlAsync($"""
             DELETE FROM messaging.outbox_messages WHERE "EventId" = {bootstrapWakeId}
             """, ct);
         await scenario.TourProjection.Apply(baseline, ct);

@@ -46,25 +46,18 @@ public sealed class CatalogInboxOperationsApiClient(HttpClient httpClient) : ICa
         }
 
         var request = new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative));
-        var outcome = await HttpOutcomeMapper.Send(httpClient, request, HttpStatusCode.OK, InboxJson.GetCatalogInboxDuplicatePageDto,
-            CatalogToursApiClientJsonContext.Default.ContractValidationProblemDto, ct).ConfigureAwait(false);
-        if (outcome.Kind != HttpOutcomeKind.Succeeded)
-        {
-            return outcome;
-        }
-
-        return outcome.Value is { Rows: { } rows } page
-            && rows.Count <= filters.Limit
-            && rows.All(row => row is not null
-                && (filters.EventId is not { } requestedEventId || row.EventId == requestedEventId)
-                && (filters.ObservedSince is not { } sinceBound || row.LastObservedAt >= sinceBound))
-            && page.NextObservedAt.HasValue == page.NextEventId.HasValue
-            && page.NextEventId != Guid.Empty
-            && (page.NextObservedAt is null || (rows is [.., var last]
-                && (last.LastObservedAt, last.EventId) == (page.NextObservedAt, page.NextEventId)
-                && (page.NextObservedAt, page.NextEventId) != (filters.AfterObservedAt, filters.AfterEventId)))
-            ? outcome
-            : HttpOutcomeMapper.Status<GetCatalogInboxDuplicatePageDto>(
-                HttpOutcomeKind.MalformedBody, HttpStatusCode.OK, "Catalog inbox response contained an invalid page.");
+        return await HttpOutcomeMapper.Send(httpClient, request, HttpStatusCode.OK, InboxJson.GetCatalogInboxDuplicatePageDto,
+            CatalogToursApiClientJsonContext.Default.ContractValidationProblemDto,
+            validateValue: page => page.Rows is { } rows
+                && rows.Count <= filters.Limit
+                && rows.All(row => row is not null
+                    && (filters.EventId is not { } requestedEventId || row.EventId == requestedEventId)
+                    && (filters.ObservedSince is not { } sinceBound || row.LastObservedAt >= sinceBound))
+                && page.NextObservedAt.HasValue == page.NextEventId.HasValue
+                && page.NextEventId != Guid.Empty
+                && (page.NextObservedAt is null || (rows is [.., var last]
+                    && (last.LastObservedAt, last.EventId) == (page.NextObservedAt, page.NextEventId)
+                    && (page.NextObservedAt, page.NextEventId) != (filters.AfterObservedAt, filters.AfterEventId))),
+            ct).ConfigureAwait(false);
     }
 }

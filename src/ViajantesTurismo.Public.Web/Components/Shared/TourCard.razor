@@ -7,7 +7,7 @@
 }
 @if (coverImage is not null && cardVariant is not null)
 {
-    <Card Title="@Tour.Title"
+    <Card Heading="@Tour.Title"
           HeadingLevel="HeadingLevel"
           Href="@TourLink"
           Image="@ResponsiveImage.Create(LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant)), cardVariant.Width, cardVariant.Height, TourImageRenditions.Alternative(coverImage))">
@@ -16,7 +16,7 @@
 }
 else
 {
-    <Card Title="@Tour.Title" HeadingLevel="HeadingLevel" Href="@TourLink">
+    <Card Heading="@Tour.Title" HeadingLevel="HeadingLevel" Href="@TourLink">
         <p>@Tour.Summary</p>
     </Card>
 }

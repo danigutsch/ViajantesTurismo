@@ -70,7 +70,7 @@ public sealed class CatalogGalleryOriginalWakePostgreSqlTests(HostedTestFixture 
         var applied = await observer.ProcessStatus.Read(firstTour.Id, firstSequence, ct);
         var operationsPublished = await observer.GalleryOperations.Read(firstTour.Id, firstSequence, ct);
         var terminal = await observer.Events.Load(stream, StreamRevision.From(2), ct);
-        var removed = await observer.Database.Database.ExecuteSqlInterpolatedAsync($"""
+        var removed = await observer.Database.Database.ExecuteSqlAsync($"""
             DELETE FROM messaging.outbox_messages WHERE "EventId" = {eventId} AND "PublishedAt" IS NOT NULL
             """, ct);
         var retainedAfterRemoval = await IntegrationEventDeliveryInspection.ReadRetainedOutbox(observer.Database, eventId, ct);
